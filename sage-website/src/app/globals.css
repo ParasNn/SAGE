@@ -19,3 +19,33 @@ body {
     padding: 1rem;
 
 }
+
+@keyframes fade-in-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-page-load-1 {
+    animation-name: fade-in-slide-up;
+    animation-duration: 0.5s;
+    animation-timing-function: ease-out;
+    animation-fill-mode: forwards;
+    animation-delay: .3s;
+    animation-fill-mode: backwards;
+}
+
+.animate-page-load-2 {
+    animation-name: fade-in-slide-up;
+    animation-duration: 0.5s;
+    animation-timing-function: ease-out;
+    animation-fill-mode: forwards;
+    animation-delay: 0.7s;
+    animation-fill-mode: backwards;
+}

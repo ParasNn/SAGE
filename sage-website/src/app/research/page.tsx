@@ -5,8 +5,11 @@ const page = () => {
     return (
         <div>
             <Navbar></Navbar>
-            <p>hello gurt my name gurt</p>
+            <div className="animate-page-load-1">
+                <p>hello gurt my name gurt</p>
+            </div>
         </div>
+
     )
 }
 
