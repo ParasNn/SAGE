@@ -14,7 +14,7 @@ const Navbar = () => {
                 <NavButton text="Research & Commentary" route="/research" />
                 <NavButton text="Team" route="/" />
                 {/* <NavButton text="Contact" route="/" /> */}
-                <NavButton text="Apply" route="/" />
+                <NavButton text="Apply" route="/apply" />
             </div>
         </nav>
     );
