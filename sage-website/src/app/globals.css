@@ -2,7 +2,11 @@
 
 :root {
     --background: #284434;
+    --secondary-color: #234d3f;
+    --accent-color: #d26b6b;
     --foreground: #bcb8af;
+    --text-color: #bcb8af;
+    --text2-color: #3e7a65;
 }
 
 @theme inline {

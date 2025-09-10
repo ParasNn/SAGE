@@ -12,8 +12,8 @@ const NavButton: React.FC<NavButtonProps> = ({ text, route }) => {
             <Link
                 href={route}
                 className="inline-block bg-transparent transition-colors text-xl 
-                font-bold px-8 py-0 rounded-lg text-center text-[#3e7a65] hover:text-[#d26b6b] 
-                whitespace-nowrap">
+                font-bold px-8 py-0 rounded-lg text-center text-[var(--text2-color)] 
+                hover:text-[var(--accent-color)] whitespace-nowrap">
                 {text}
             </Link>
         </div>
