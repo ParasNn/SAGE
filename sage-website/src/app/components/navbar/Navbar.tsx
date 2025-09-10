@@ -13,7 +13,8 @@ const Navbar = () => {
                 <NavButton text="About" route="/" />
                 <NavButton text="Research & Commentary" route="/research" />
                 <NavButton text="Team" route="/" />
-                <NavButton text="Contact" route="/" />
+                {/* <NavButton text="Contact" route="/" /> */}
+                <NavButton text="Apply" route="/" />
             </div>
         </nav>
     );

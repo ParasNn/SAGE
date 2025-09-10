@@ -34,18 +34,18 @@ body {
 
 .animate-page-load-1 {
     animation-name: fade-in-slide-up;
-    animation-duration: 0.5s;
+    animation-duration: 0.4s;
     animation-timing-function: ease-out;
     animation-fill-mode: forwards;
-    animation-delay: .3s;
+    animation-delay: .2s;
     animation-fill-mode: backwards;
 }
 
 .animate-page-load-2 {
     animation-name: fade-in-slide-up;
-    animation-duration: 0.5s;
+    animation-duration: 0.4s;
     animation-timing-function: ease-out;
     animation-fill-mode: forwards;
-    animation-delay: 0.7s;
+    animation-delay: 0.5s;
     animation-fill-mode: backwards;
 }
