@@ -9,6 +9,24 @@
     --text2-color: #3e7a65;
 }
 
+.dark-mode {
+    --background: #284434;
+    --secondary-color: #234d3f;
+    --accent-color: #d26b6b;
+    --foreground: #bcb8af;
+    --text-color: #bcb8af;
+    --text2-color: #3e7a65;
+}
+
+.light-mode {
+    --background: #f4f1ea;
+    --secondary-color: #e2e8e4;
+    --accent-color: #c05555;
+    --foreground: #284434;
+    --text-color: #284434;
+    --text2-color: #3e7a65;
+}
+
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);

@@ -6,7 +6,7 @@ import Blurb from "./components/general/blurb";
 
 export default function Home() {
     return (
-        <main>
+        <div>
             <Navbar />
             <div className="animate-page-load-1">
                 <SAGE />
@@ -28,6 +28,6 @@ export default function Home() {
                 and on and on and on and on and on and on and on and on and on and on and on and on
                 and on and on and on and on and on and on and on"></Blurb>
             </div>
-        </main>
+        </div>
     );
 }
