@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Navbar from '../components/navbar/Navbar';
+import ContentBox from '../components/upload_components/ContentBox';
 
 export default function UploadPage() {
     const [title, setTitle] = useState('');
@@ -58,16 +59,14 @@ export default function UploadPage() {
                 <div className="flex-1 flex items-center justify-center p-6 animate-page-load-1">
                     <div className="w-full max-w-2xl bg-[var(--secondary-color)]/30 backdrop-blur-xl border border-[var(--foreground)]/10 rounded-2xl shadow-2xl p-8 md:p-12 transition-all duration-300 hover:shadow-[var(--accent-color)]/10">
                         <h1 className="text-4xl font-bold mb-2 text-[var(--accent-color)] tracking-tight">
-                            Upload an Article:
+                            Upload Article:
                         </h1>
-                        <p className="text-[var(--text-color)]/80 mb-8 font-light">
-                            Share your thoughts and findings with the SAGE community.
-                        </p>
+
 
                         {message && (
                             <div
                                 className={`mb-6 p-4 rounded-lg text-sm font-medium ${message.type === 'success'
-                                    ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                                    ? 'bg-[var(--text2-color)]/10 text-[var(--accent-color)] border border-[var(--text2-color)]/20'
                                     : 'bg-red-500/10 text-red-400 border border-red-500/20'
                                     }`}
                             >
@@ -110,14 +109,9 @@ export default function UploadPage() {
                                 <label htmlFor="content" className="block text-sm font-medium text-[var(--text2-color)] uppercase tracking-wider ml-1">
                                     Content
                                 </label>
-                                <textarea
-                                    id="content"
-                                    value={content}
-                                    onChange={(e) => setContent(e.target.value)}
-
-                                    required
-                                    rows={8}
-                                    className="w-full bg-[var(--background)]/50 border border-[var(--foreground)]/10 rounded-xl px-4 py-3 text-[var(--foreground)] placeholder-[var(--foreground)]/30 focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-transparent transition-all duration-200 resize-y min-h-[150px]"
+                                <ContentBox
+                                    content={content}
+                                    onChange={(html) => setContent(html)}
                                 />
                             </div>
 
