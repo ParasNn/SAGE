@@ -57,7 +57,7 @@ export default function UploadPage() {
                 <Navbar />
 
                 <div className="flex-1 flex items-center justify-center p-6 animate-page-load-1">
-                    <div className="w-full max-w-2xl bg-[var(--secondary-color)]/30 backdrop-blur-xl border border-[var(--foreground)]/10 rounded-2xl shadow-2xl p-8 md:p-12 transition-all duration-300 hover:shadow-[var(--accent-color)]/10">
+                    <div className="w-full max-w-2xl bg-[var(--secondary-color)]/30 backdrop-blur-xl border border-[var(--foreground)]/10 rounded-2xl p-8 md:p-12 transition-all duration-300">
                         <h1 className="text-4xl font-bold mb-2 text-[var(--accent-color)] tracking-tight">
                             Upload Article:
                         </h1>

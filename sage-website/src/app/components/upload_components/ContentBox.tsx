@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TextStyle } from '@tiptap/extension-text-style';
@@ -112,6 +112,12 @@ export default function ContentBox({ content, onChange }: ContentBoxProps) {
         },
         immediatelyRender: false,
     });
+
+    useEffect(() => {
+        if (editor && content === '' && !editor.isEmpty) {
+            editor.commands.setContent('');
+        }
+    }, [content, editor]);
 
     return (
         <div className="w-full bg-[var(--background)]/50 border border-[var(--foreground)]/10 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-[var(--accent-color)]/50 focus-within:border-transparent transition-all duration-200">
