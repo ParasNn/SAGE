@@ -46,7 +46,7 @@ export default function UploadPage() {
     };
 
     return (
-        <main className="min-h-screen bg-[var(--background)] relative overflow-hidden font-sans text-[var(--foreground)]">
+        <main className="min-h-screen bg-[var(--background)] relative overflow-hidden font-sans text-[var(--foreground)] p-4">
             {/* Decorative background elements */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
                 <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-[var(--accent-color)] opacity-5 rounded-full blur-[100px]" />
@@ -57,7 +57,7 @@ export default function UploadPage() {
                 <Navbar />
 
                 <div className="flex-1 flex items-center justify-center p-6 animate-page-load-1">
-                    <div className="w-full max-w-2xl bg-[var(--secondary-color)]/30 backdrop-blur-xl border border-[var(--foreground)]/10 rounded-2xl p-8 md:p-12 transition-all duration-300">
+                    <div className="w-full max-w-2xl bg-[var(--secondary-color)]/30 backdrop-blur-xl rounded-2xl p-8 md:p-12 transition-all duration-300">
                         <h1 className="text-4xl font-bold mb-2 text-[var(--accent-color)] tracking-tight">
                             Upload Article:
                         </h1>
