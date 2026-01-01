@@ -1,0 +1,67 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "../context/AuthContext";
+import Navbar from "../components/navbar/Navbar";
+import Link from "next/link";
+
+export default function DashboardPage() {
+    const { user, isLoading } = useAuth();
+    const router = useRouter();
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (!isLoading && !user) {
+            router.push("/login");
+        }
+    }, [isLoading, user, router]);
+
+    if (!isMounted || isLoading || !user) {
+        return null; // Or a loading spinner
+    }
+
+    return (
+        <main className="min-h-screen bg-[var(--background)] relative overflow-hidden font-sans text-[var(--foreground)]">
+            <Navbar />
+
+            <div className="container mx-auto px-4 py-12 animate-page-load-1">
+                <div className="max-w-4xl mx-auto">
+                    <header className="mb-12">
+                        <h1 className="text-4xl font-bold text-[var(--accent-color)] mb-4">Dashboard</h1>
+                        <p className="text-[var(--text2-color)] text-lg">
+                            Welcome back, <span className="font-semibold">{user}</span>
+                        </p>
+                    </header>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-[var(--secondary-color)] rounded-xl p-6 border border-[var(--text2-color)]/20 shadow-lg hover:shadow-xl transition-all duration-300">
+                            <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">Manage Articles</h2>
+                            <p className="text-[var(--text2-color)] mb-6">Create new articles or edit existing ones.</p>
+
+                            <Link
+                                href="/upload"
+                                className="inline-block px-6 py-3 rounded-lg bg-[var(--accent-color)] text-[var(--background)] font-bold hover:bg-[#b05555] transition-colors"
+                            >
+                                Upload New Article
+                            </Link>
+                        </div>
+
+                        {/* Placeholder for future features */}
+                        <div className="bg-[var(--secondary-color)]/50 rounded-xl p-6 border border-[var(--text2-color)]/10">
+                            <h2 className="text-2xl font-bold text-[var(--foreground)]/70 mb-4">Analytics</h2>
+                            <p className="text-[var(--text2-color)]/70 mb-6">View views and engagement (Coming Soon)</p>
+                            <button disabled className="px-6 py-3 rounded-lg bg-[var(--text2-color)]/20 text-[var(--foreground)]/50 cursor-not-allowed">
+                                View Stats
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    );
+}

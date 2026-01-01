@@ -4,12 +4,24 @@ import React, { useState } from 'react';
 import Navbar from '../components/navbar/Navbar';
 import ContentBox from '../components/upload_components/ContentBox';
 
+import { useAuth } from '../context/AuthContext';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
 export default function UploadPage() {
+    const { user, isLoading } = useAuth();
+    const router = useRouter();
     const [title, setTitle] = useState('');
     const [author, setAuthor] = useState('');
     const [content, setContent] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+    useEffect(() => {
+        if (!isLoading && !user) {
+            router.push('/login');
+        }
+    }, [isLoading, user, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -44,6 +56,10 @@ export default function UploadPage() {
             setIsSubmitting(false);
         }
     };
+
+    if (isLoading || !user) {
+        return null;
+    }
 
     return (
         <main className="min-h-screen bg-[var(--background)] relative overflow-hidden font-sans text-[var(--foreground)] p-4">
