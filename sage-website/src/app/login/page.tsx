@@ -12,18 +12,27 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [isLoggingIn, setIsLoggingIn] = useState(false);
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Mock login - in a real app, verify credential with backend here
+        setError("");
+        setIsLoggingIn(true);
+
         if (email && password) {
-            login(email);
-            router.push("/dashboard");
+            const success = await login(email, password);
+            if (success) {
+                router.push("/dashboard");
+            } else {
+                setError("Invalid email or password");
+            }
         }
+        setIsLoggingIn(false);
     };
 
     return (
@@ -33,6 +42,12 @@ export default function LoginPage() {
                     <h1 className="text-3xl font-bold mb-2 text-[var(--foreground)]">Welcome Back</h1>
                     <p className="text-[var(--text2-color)]">Please sign in to your account</p>
                 </div>
+
+                {error && (
+                    <div className="mb-6 p-4 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 text-center text-sm font-medium">
+                        {error}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
@@ -93,9 +108,10 @@ export default function LoginPage() {
 
                     <button
                         type="submit"
-                        className="w-full py-3 px-4 bg-[var(--accent-color)] hover:bg-[#b05555] text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200"
+                        disabled={isLoggingIn}
+                        className="w-full py-3 px-4 bg-[var(--accent-color)] hover:bg-[#b05555] text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                     >
-                        Sign In
+                        {isLoggingIn ? "Signing In..." : "Sign In"}
                     </button>
                 </form>
             </div>

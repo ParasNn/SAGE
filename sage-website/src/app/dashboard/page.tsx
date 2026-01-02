@@ -7,7 +7,7 @@ import Navbar from "../components/navbar/Navbar";
 import Link from "next/link";
 
 export default function DashboardPage() {
-    const { user, isLoading } = useAuth();
+    const { user, isLoading, logout } = useAuth();
     const router = useRouter();
     const [isMounted, setIsMounted] = useState(false);
 
@@ -31,11 +31,19 @@ export default function DashboardPage() {
 
             <div className="container mx-auto px-4 py-12 animate-page-load-1">
                 <div className="max-w-4xl mx-auto">
-                    <header className="mb-12">
-                        <h1 className="text-4xl font-bold text-[var(--accent-color)] mb-4">Dashboard</h1>
-                        <p className="text-[var(--text2-color)] text-lg">
-                            Welcome back, <span className="font-semibold">{user}</span>
-                        </p>
+                    <header className="mb-12 flex justify-between items-end">
+                        <div>
+                            <h1 className="text-4xl font-bold text-[var(--accent-color)] mb-4">Dashboard</h1>
+                            <p className="text-[var(--text2-color)] text-lg">
+                                Welcome back, <span className="font-semibold">{user}</span>
+                            </p>
+                        </div>
+                        <button
+                            onClick={logout}
+                            className="px-4 py-2 rounded-lg border border-[var(--accent-color)] text-[var(--accent-color)] hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors font-medium"
+                        >
+                            Sign Out
+                        </button>
                     </header>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

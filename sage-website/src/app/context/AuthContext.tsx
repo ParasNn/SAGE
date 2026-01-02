@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 interface AuthContextType {
     user: string | null;
-    login: (email: string) => void;
+    login: (email: string, password: string) => Promise<boolean>;
     logout: () => void;
     isLoading: boolean;
 }
@@ -26,9 +26,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
     }, []);
 
-    const login = (email: string) => {
-        setUser(email);
-        localStorage.setItem("sage_user", email);
+    const login = async (email: string, password: string): Promise<boolean> => {
+        try {
+            const response = await fetch("http://localhost:8080/api/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                // Depending on backend, data might contain user info. 
+                // For now backend returns map with "email", "username", etc.
+                const username = data.username || email; // Fallback to email if username missing
+                setUser(username);
+                localStorage.setItem("sage_user", username);
+                return true;
+            } else {
+                return false;
+            }
+        } catch (error) {
+            console.error("Login failed:", error);
+            return false;
+        }
     };
 
     const logout = () => {
