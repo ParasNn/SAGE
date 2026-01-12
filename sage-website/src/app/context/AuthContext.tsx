@@ -25,17 +25,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const router = useRouter();
 
     useEffect(() => {
-        // Check for logged in user in localStorage on mount
-        const storedUser = localStorage.getItem("sage_user");
-        if (storedUser) {
-            try {
-                setUser(JSON.parse(storedUser));
-            } catch (error) {
-                console.error("Failed to parse user from local storage", error);
-                localStorage.removeItem("sage_user");
+        const initAuth = async () => {
+            // Optimistically load from localStorage first
+            const storedUser = localStorage.getItem("sage_user");
+            if (storedUser) {
+                try {
+                    setUser(JSON.parse(storedUser));
+                } catch (error) {
+                    console.error("Failed to parse user from local storage", error);
+                }
             }
-        }
-        setIsLoading(false);
+
+            // Verify with backend
+            try {
+                const response = await fetch("http://localhost:8080/api/auth/me", {
+                    credentials: "include"
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const userData: User = {
+                        id: data.id,
+                        username: data.username,
+                        email: data.email,
+                        role: data.role
+                    };
+                    setUser(userData);
+                    localStorage.setItem("sage_user", JSON.stringify(userData));
+                } else {
+                    // Session invalid or expired
+                    if (storedUser) {
+                        // Only clear and redirect if we thought we were logged in
+                        // logic: if !response.ok, backend says "not logged in".
+                        setUser(null);
+                        localStorage.removeItem("sage_user");
+                    }
+                }
+            } catch (error) {
+                console.error("Session check failed", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        initAuth();
     }, []);
 
     const login = async (email: string, password: string): Promise<boolean> => {

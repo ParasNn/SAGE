@@ -91,4 +91,18 @@ public class AuthController {
 
         return ResponseEntity.ok("User registered successfully");
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> checkSession(java.security.Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return userRepository.findByEmail(principal.getName())
+                .map(user -> ResponseEntity.ok(Map.of(
+                        "id", user.getId(),
+                        "username", user.getUsername(),
+                        "email", user.getEmail(),
+                        "role", user.getRole())))
+                .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+    }
 }
