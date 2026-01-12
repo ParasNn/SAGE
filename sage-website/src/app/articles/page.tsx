@@ -249,7 +249,7 @@ export default function ArticlesPage() {
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <select
-                                                            value={article.status || 'Pending'}
+                                                            value={article.status || 'draft'}
                                                             onChange={(e) => handleStatusChange(article.id, e.target.value)}
                                                             className={`text-xs font-medium border rounded-full px-2 py-1 outline-none cursor-pointer appearance-none text-center min-w-[100px]
                                                                 ${(article.status?.toLowerCase() === 'published' || article.status?.toLowerCase() === 'approved')
@@ -263,7 +263,6 @@ export default function ArticlesPage() {
                                                             `}
                                                             style={{ textAlignLast: 'center' }}
                                                         >
-                                                            <option value="Pending" className="bg-[var(--secondary-color)] text-[var(--foreground)]">Pending</option>
                                                             <option value="draft" className="bg-[var(--secondary-color)] text-[var(--foreground)]">Draft</option>
                                                             <option value="in_review" className="bg-[var(--secondary-color)] text-[var(--foreground)]">In Review</option>
                                                             <option value="published" className="bg-[var(--secondary-color)] text-[var(--foreground)]">Published</option>
