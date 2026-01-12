@@ -8,9 +8,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-import org.jsoup.Jsoup;
-import org.jsoup.safety.Safelist;
-
 @Service
 public class ArticleService {
 
@@ -29,15 +26,4 @@ public class ArticleService {
         return articleRepository.findById(id);
     }
 
-    public Article saveArticle(Article article) {
-        if (article.getContent() != null) {
-            String sanitizedContent = Jsoup.clean(article.getContent(), Safelist.relaxed());
-            article.setContent(sanitizedContent);
-        }
-        return articleRepository.save(article);
-    }
-
-    public void deleteArticle(Integer id) {
-        articleRepository.deleteById(id);
-    }
 }

@@ -31,32 +31,4 @@ public class ArticleController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public Article createArticle(@RequestBody Article article) {
-        return articleService.saveArticle(article);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Article> updateArticle(@PathVariable Integer id, @RequestBody Article articleDetails) {
-        return articleService.getArticleById(id)
-                .map(existingArticle -> {
-                    existingArticle.setTitle(articleDetails.getTitle());
-                    existingArticle.setContent(articleDetails.getContent());
-                    existingArticle.setAuthor(articleDetails.getAuthor());
-                    if (articleDetails.getPublishedDate() != null) {
-                        existingArticle.setPublishedDate(articleDetails.getPublishedDate());
-                    }
-                    return ResponseEntity.ok(articleService.saveArticle(existingArticle));
-                })
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteArticle(@PathVariable Integer id) {
-        if (articleService.getArticleById(id).isPresent()) {
-            articleService.deleteArticle(id);
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
-    }
 }

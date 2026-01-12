@@ -9,19 +9,13 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function UploadPage() {
-    const { user, isLoading } = useAuth();
+    const { user } = useAuth();
     const router = useRouter();
     const [title, setTitle] = useState('');
     const [author, setAuthor] = useState('');
     const [content, setContent] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
-
-    useEffect(() => {
-        if (!isLoading && !user) {
-            router.push('/login');
-        }
-    }, [isLoading, user, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -34,10 +28,12 @@ export default function UploadPage() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
                 body: JSON.stringify({
                     title,
                     author,
                     content,
+                    // userId removed as auth is not required
                 }),
             });
 
@@ -47,7 +43,9 @@ export default function UploadPage() {
                 setAuthor('');
                 setContent('');
             } else {
-                setMessage({ text: 'Failed to publish article. Please try again.', type: 'error' });
+                const errorText = await response.text();
+                console.error('Upload failed. Status:', response.status, 'Body:', errorText);
+                setMessage({ text: `Failed to publish: ${errorText || 'Unknown error'}`, type: 'error' });
             }
         } catch (error) {
             console.error('Error submitting article:', error);
@@ -56,10 +54,6 @@ export default function UploadPage() {
             setIsSubmitting(false);
         }
     };
-
-    if (isLoading || !user) {
-        return null;
-    }
 
     return (
         <main className="min-h-screen bg-[var(--background)] relative overflow-hidden font-sans text-[var(--foreground)] p-4">

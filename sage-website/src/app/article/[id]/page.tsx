@@ -2,8 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import Navbar from '../../components/navbar/Navbar';
 import ArticlePage from '../../components/ArticlePage';
+import { useAuth } from '../../context/AuthContext';
 
 interface Article {
     id: number;
@@ -11,11 +13,13 @@ interface Article {
     author: string;
     content: string;
     publishedDate?: string;
+    status?: string;
 }
 
 export default function Page() {
     const params = useParams();
     const id = params?.id;
+    const { user, isLoading } = useAuth();
 
     const [article, setArticle] = useState<Article | null>(null);
     const [loading, setLoading] = useState(true);
@@ -40,9 +44,13 @@ export default function Page() {
 
                 const data = await response.json();
                 setArticle(data);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error(err);
-                setError(err.message || 'An unexpected error occurred');
+                if (err instanceof Error) {
+                    setError(err.message);
+                } else {
+                    setError('An unexpected error occurred');
+                }
             } finally {
                 setLoading(false);
             }
@@ -50,6 +58,28 @@ export default function Page() {
 
         fetchArticle();
     }, [id]);
+
+    // Check access for non-published articles (Draft, Pending, In Review, Rejected, etc.)
+    if (!loading && article && article.status?.toLowerCase() !== 'published' && !user) {
+        return (
+            <main className="min-h-screen bg-[var(--background)] relative overflow-hidden font-sans text-[var(--foreground)] p-4">
+                <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+                    <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-[var(--accent-color)] opacity-5 rounded-full blur-[100px]" />
+                    <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-[var(--text2-color)] opacity-5 rounded-full blur-[100px]" />
+                </div>
+                < Navbar />
+                <div className="flex-1 container mx-auto px-4 py-8 animate-page-load-1 flex flex-col items-center justify-center min-h-[50vh]">
+                    <div className="bg-[var(--secondary-color)]/50 backdrop-blur-xl border border-[var(--text2-color)]/20 text-center px-8 py-8 rounded-xl max-w-lg shadow-xl">
+                        <h3 className="text-2xl font-bold mb-4 text-[var(--accent-color)]">Restricted Access</h3>
+                        <p className="text-[var(--text2-color)] mb-6">This article is not yet published. You must be logged in to view it.</p>
+                        <Link href="/login" className="inline-block px-6 py-3 rounded-xl bg-[var(--accent-color)] text-[var(--background)] font-bold hover:bg-[#b05555] transition-colors">
+                            Sign In to View
+                        </Link>
+                    </div>
+                </div>
+            </main>
+        );
+    }
 
     return (
         <main className="min-h-screen bg-[var(--background)] relative overflow-hidden font-sans text-[var(--foreground)] p-4">
@@ -75,9 +105,9 @@ export default function Page() {
                             <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-6 py-4 rounded-xl max-w-md">
                                 <h3 className="text-xl font-bold mb-2">Error</h3>
                                 <p>{error}</p>
-                                <a href="/" className="inline-block mt-4 text-[var(--accent-color)] hover:underline">
+                                <Link href="/" className="inline-block mt-4 text-[var(--accent-color)] hover:underline">
                                     Return to Home
-                                </a>
+                                </Link>
                             </div>
                         </div>
                     )}

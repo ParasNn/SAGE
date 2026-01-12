@@ -3,8 +3,15 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
+export interface User {
+    id: number;
+    username: string;
+    email: string;
+    role?: string;
+}
+
 interface AuthContextType {
-    user: string | null;
+    user: User | null;
     login: (email: string, password: string) => Promise<boolean>;
     logout: () => void;
     isLoading: boolean;
@@ -13,7 +20,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<string | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
@@ -21,7 +28,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Check for logged in user in localStorage on mount
         const storedUser = localStorage.getItem("sage_user");
         if (storedUser) {
-            setUser(storedUser);
+            try {
+                setUser(JSON.parse(storedUser));
+            } catch (error) {
+                console.error("Failed to parse user from local storage", error);
+                localStorage.removeItem("sage_user");
+            }
         }
         setIsLoading(false);
     }, []);
@@ -33,16 +45,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 headers: {
                     "Content-Type": "application/json",
                 },
+                credentials: "include", // Important for sessions
                 body: JSON.stringify({ email, password }),
             });
 
             if (response.ok) {
                 const data = await response.json();
-                // Depending on backend, data might contain user info. 
-                // For now backend returns map with "email", "username", etc.
-                const username = data.username || email; // Fallback to email if username missing
-                setUser(username);
-                localStorage.setItem("sage_user", username);
+                const userData: User = {
+                    id: data.id,
+                    username: data.username,
+                    email: data.email,
+                    role: data.role
+                };
+                setUser(userData);
+                localStorage.setItem("sage_user", JSON.stringify(userData));
                 return true;
             } else {
                 return false;
