@@ -70,4 +70,17 @@ public class ArticleController {
                 });
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<List<Article>> getMyArticles(java.security.Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(403).build();
+        }
+        return userRepository.findByEmail(principal.getName())
+                .map(user -> {
+                    List<Article> articles = articleService.getArticlesByUserId(user.getId());
+                    return ResponseEntity.ok(articles);
+                })
+                .orElse(ResponseEntity.status(401).build());
+    }
+
 }
