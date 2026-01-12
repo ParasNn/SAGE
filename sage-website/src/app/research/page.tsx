@@ -1,10 +1,8 @@
 import React from 'react'
-import Navbar from '../components/navbar/Navbar'
 
 const page = () => {
     return (
-        <div>
-            <Navbar></Navbar>
+        <div className="flex-1">
             <div className="animate-page-load-1">
                 <p>hello gurt my name gurt</p>
             </div>

@@ -1,13 +1,12 @@
 "use client"
 
-import Navbar from "./components/navbar/Navbar";
+
 import SAGE from "./components/about_components/SAGE";
 import Blurb from "./components/general/blurb";
 
 export default function Home() {
     return (
-        <div>
-            <Navbar />
+        <div className="flex-1">
             <div className="animate-page-load-1">
                 <SAGE />
             </div>

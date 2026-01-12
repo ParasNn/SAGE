@@ -1,11 +1,9 @@
 import React from 'react'
-import Navbar from '../components/navbar/Navbar'
 import TeamCard from '../components/team_components/TeamInfoCard'
 
 const page = () => {
     return (
-        <div>
-            <Navbar />
+        <div className="flex-1">
             <div>
                 <TeamCard image="thing" name="gurt" major="ece" />
             </div>

@@ -34,7 +34,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 animate-page-load-1">
+        <div className="flex-1 flex items-center justify-center p-4 animate-page-load-1">
             <div className="w-full max-w-md bg-[var(--secondary-color)] rounded-2xl shadow-xl p-8 border border-[var(--text2-color)]/20">
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold mb-2 text-[var(--foreground)]">Welcome Back</h1>
