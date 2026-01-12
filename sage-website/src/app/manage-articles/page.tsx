@@ -70,25 +70,13 @@ export default function ArticlesPage() {
                 a.id === articleId ? { ...a, status: newStatus } : a
             ));
 
-            const response = await fetch(`http://localhost:8080/api/articles/${articleId}`, {
-                method: 'PUT',
+            const response = await fetch(`http://localhost:8080/api/articles/${articleId}/status`, {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
                 body: JSON.stringify({
-                    // We only need to send what we are updating, but the backend implementation 
-                    // of PUT typically replaces or expects full object. 
-                    // However, looking at the backend code, it updates fields if present.
-                    // To be safe and compliant with typical PUT, we might need full object or separate PATCH.
-                    // But our backend controller code checks 'articleDetails' fields and updates existing.
-                    // So sending just status is safer given the backend implementation I saw 
-                    // (checks != null for date, simple setters for others). 
-                    // Wait, setTitle/setContent are unconditional setters in the backend I saw.
-                    // "existingArticle.setTitle(articleDetails.getTitle());"
-                    // If I send ONLY status, title will be null!
-                    // I must find the article first to send all data, OR the backend needs PATCH support.
-                    // Let's send the FULL article data to be safe since the backend does unconditional sets for title/content/author.
-                    ...articles.find(a => a.id === articleId),
                     status: newStatus
                 }),
             });
@@ -196,7 +184,7 @@ export default function ArticlesPage() {
                                     <tr className="bg-[var(--secondary-color)] border-b border-[var(--text2-color)]/10 text-[var(--text2-color)] uppercase text-xs tracking-wider">
                                         <th className="px-6 py-4 font-semibold">Title</th>
                                         <th className="px-6 py-4 font-semibold">Author (Field)</th>
-                                        <th className="px-6 py-4 font-semibold">Published Date</th>
+                                        <th className="px-6 py-4 font-semibold">Date</th>
                                         <th className="px-6 py-4 font-semibold">Uploaded By</th>
                                         <th className="px-6 py-4 font-semibold">Status</th>
                                         <th className="px-6 py-4 font-semibold">Actions</th>

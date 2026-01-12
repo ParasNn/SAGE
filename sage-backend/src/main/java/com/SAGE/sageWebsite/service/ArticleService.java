@@ -34,4 +34,11 @@ public class ArticleService {
         return articleRepository.findByUserId(userId);
     }
 
+    public Article updateArticleStatus(Integer id, String status) {
+        return articleRepository.findById(id).map(article -> {
+            article.setStatus(status);
+            return articleRepository.save(article);
+        }).orElseThrow(() -> new RuntimeException("Article not found with id " + id));
+    }
+
 }

@@ -62,7 +62,7 @@ export default function DashboardPage() {
                             </Link>
                             {(user.role?.toLowerCase() === 'admin' || user.role?.toLowerCase() === 'officer') && (
                                 <Link
-                                    href="/articles"
+                                    href="/manage-articles"
                                     className="flex-1 text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
                                 >
                                     Manage Articles

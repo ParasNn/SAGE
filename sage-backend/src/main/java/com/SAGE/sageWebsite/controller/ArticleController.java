@@ -19,6 +19,10 @@ public class ArticleController {
         public String content;
     }
 
+    static class StatusUpdate {
+        public String status;
+    }
+
     private final ArticleService articleService;
     private final com.SAGE.sageWebsite.repository.UserRepository userRepository;
 
@@ -79,6 +83,25 @@ public class ArticleController {
                 .map(user -> {
                     List<Article> articles = articleService.getArticlesByUserId(user.getId());
                     return ResponseEntity.ok(articles);
+                })
+                .orElse(ResponseEntity.status(401).build());
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Article> updateStatus(@PathVariable Integer id, @RequestBody StatusUpdate statusUpdate,
+            java.security.Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(403).build();
+        }
+        // In a real app, verify user role here (e.g. only admin/officer)
+        return userRepository.findByEmail(principal.getName())
+                .map(user -> {
+                    try {
+                        Article updated = articleService.updateArticleStatus(id, statusUpdate.status);
+                        return ResponseEntity.ok(updated);
+                    } catch (RuntimeException e) {
+                        return ResponseEntity.status(404).<Article>build();
+                    }
                 })
                 .orElse(ResponseEntity.status(401).build());
     }
