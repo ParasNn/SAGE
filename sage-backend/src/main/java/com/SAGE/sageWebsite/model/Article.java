@@ -31,7 +31,7 @@ public class Article {
     private User uploader;
 
     @Column(length = 20)
-    private String status = "published";
+    private String status = "draft";
 
     // Getters and Setters
     public Integer getId() {

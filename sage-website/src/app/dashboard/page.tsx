@@ -47,23 +47,23 @@ export default function DashboardPage() {
                         <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">Manage Articles</h2>
                         <p className="text-[var(--text2-color)] mb-6">Create, edit, or delete articles.</p>
 
-                        <div className="flex flex-wrap gap-4">
+                        <div className="flex flex-col gap-4">
                             <Link
                                 href="/upload"
-                                className="flex-1 text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
+                                className="w-full text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
                             >
                                 Upload New Article
                             </Link>
                             <Link
                                 href="/my-articles"
-                                className="flex-1 text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
+                                className="w-full text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
                             >
                                 My Articles
                             </Link>
                             {(user.role?.toLowerCase() === 'admin' || user.role?.toLowerCase() === 'officer') && (
                                 <Link
                                     href="/manage-articles"
-                                    className="flex-1 text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
+                                    className="w-full text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
                                 >
                                     Manage Articles
                                 </Link>
@@ -87,16 +87,6 @@ export default function DashboardPage() {
                         </div>
                     )}
 
-                    {/* Placeholder for future features */}
-                    {user.role?.toLowerCase() !== 'admin' && (
-                        <div className="bg-[var(--secondary-color)]/50 rounded-xl p-6 border border-[var(--text2-color)]/10">
-                            <h2 className="text-2xl font-bold text-[var(--foreground)]/70 mb-4">Analytics</h2>
-                            <p className="text-[var(--text2-color)]/70 mb-6">View views and engagement (Coming Soon)</p>
-                            <button disabled className="px-6 py-3 rounded-lg bg-[var(--text2-color)]/20 text-[var(--foreground)]/50 cursor-not-allowed">
-                                View Stats
-                            </button>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>
