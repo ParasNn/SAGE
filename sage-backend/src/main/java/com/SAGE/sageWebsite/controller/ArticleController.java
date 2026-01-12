@@ -106,4 +106,21 @@ public class ArticleController {
                 .orElse(ResponseEntity.status(401).build());
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteArticle(@PathVariable Integer id, java.security.Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(403).build();
+        }
+        return userRepository.findByEmail(principal.getName())
+                .map(user -> {
+                    try {
+                        articleService.deleteArticle(id);
+                        return ResponseEntity.ok().<Void>build();
+                    } catch (RuntimeException e) {
+                        return ResponseEntity.status(404).<Void>build();
+                    }
+                })
+                .orElse(ResponseEntity.status(401).build());
+    }
+
 }

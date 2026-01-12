@@ -103,6 +103,7 @@ export default function ArticlesPage() {
         try {
             const response = await fetch(`http://localhost:8080/api/articles/${articleToDelete.id}`, {
                 method: 'DELETE',
+                credentials: 'include'
             });
 
             if (!response.ok) {

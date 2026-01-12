@@ -41,4 +41,8 @@ public class ArticleService {
         }).orElseThrow(() -> new RuntimeException("Article not found with id " + id));
     }
 
+    public void deleteArticle(Integer id) {
+        articleRepository.deleteById(id);
+    }
+
 }
