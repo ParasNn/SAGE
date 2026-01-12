@@ -12,11 +12,21 @@ import java.util.List;
 @RequestMapping("/api/articles")
 public class ArticleController {
 
+    // DTO for incoming article content
+    static class ArticleContent {
+        public String title;
+        public String author;
+        public String content;
+    }
+
     private final ArticleService articleService;
+    private final com.SAGE.sageWebsite.repository.UserRepository userRepository;
 
     @Autowired
-    public ArticleController(ArticleService articleService) {
+    public ArticleController(ArticleService articleService,
+            com.SAGE.sageWebsite.repository.UserRepository userRepository) {
         this.articleService = articleService;
+        this.userRepository = userRepository;
     }
 
     @GetMapping
@@ -29,6 +39,35 @@ public class ArticleController {
         return articleService.getArticleById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    public ResponseEntity<Article> createArticle(@RequestBody ArticleContent articleContent,
+            java.security.Principal principal) {
+        System.out.println("Applying Article Upload Security Filter Chain...");
+        if (principal == null) {
+            System.out.println("Processing Upload Request: 403 Forbidden - User not authenticated");
+            return ResponseEntity.status(403).build();
+        }
+
+        return userRepository.findByEmail(principal.getName())
+                .map(user -> {
+                    Article article = new Article();
+                    article.setTitle(articleContent.title);
+                    article.setAuthor(articleContent.author);
+                    article.setContent(articleContent.content);
+                    article.setUserId(user.getId());
+                    article.setPublishedDate(java.time.LocalDateTime.now());
+
+                    Article savedArticle = articleService.saveArticle(article);
+                    System.out.println(
+                            "Processing Upload Request: 200 OK - Article created successfully by user " + user.getId());
+                    return ResponseEntity.ok(savedArticle);
+                })
+                .orElseGet(() -> {
+                    System.out.println("Processing Upload Request: 401 Unauthorized - User not found in DB");
+                    return ResponseEntity.status(401).build();
+                });
     }
 
 }

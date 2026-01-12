@@ -22,7 +22,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/articles/**").permitAll()
-
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/articles/**").authenticated()
                         .anyRequest().authenticated());
         return http.build();
     }
