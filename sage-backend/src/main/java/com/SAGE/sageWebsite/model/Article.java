@@ -33,6 +33,9 @@ public class Article {
     @Column(length = 20)
     private String status = "draft";
 
+    @Column(length = 100)
+    private String username;
+
     // Getters and Setters
     public Integer getId() {
         return id;
@@ -64,6 +67,14 @@ public class Article {
 
     public void setAuthor(String author) {
         this.author = author;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public LocalDateTime getPublishedDate() {

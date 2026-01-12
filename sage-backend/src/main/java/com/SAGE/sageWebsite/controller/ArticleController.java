@@ -61,6 +61,7 @@ public class ArticleController {
                     article.setAuthor(articleContent.author);
                     article.setContent(articleContent.content);
                     article.setUserId(user.getId());
+                    article.setUsername(user.getUsername());
                     article.setPublishedDate(java.time.LocalDateTime.now());
 
                     Article savedArticle = articleService.saveArticle(article);

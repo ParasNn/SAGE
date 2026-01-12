@@ -19,6 +19,8 @@ export default function UploadPage() {
     useEffect(() => {
         if (!isLoading && !user) {
             router.push('/login');
+        } else if (user && !author) {
+            setAuthor(user.username);
         }
     }, [isLoading, user, router]);
 
