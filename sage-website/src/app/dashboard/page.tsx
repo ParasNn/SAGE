@@ -87,6 +87,20 @@ export default function DashboardPage() {
                         </div>
                     )}
 
+                    <div className="bg-[var(--secondary-color)] rounded-xl p-6 border border-[var(--text2-color)]/20 shadow-lg hover:shadow-xl transition-all duration-300">
+                        <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">Account Settings</h2>
+                        <p className="text-[var(--text2-color)] mb-6">Manage your profile and security preferences.</p>
+
+                        <div className="flex flex-col gap-4">
+                            <Link
+                                href="/manage-account"
+                                className="w-full text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
+                            >
+                                Manage Account
+                            </Link>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
