@@ -11,6 +11,8 @@ export default function ManageAccountPage() {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
 
     useEffect(() => {
         if (!isLoading && !user) {
@@ -20,6 +22,19 @@ export default function ManageAccountPage() {
             setEmail(user.email);
         }
     }, [isLoading, user, router]);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+
+        if (password && password !== confirmPassword) {
+            setError("Passwords do not match");
+            return;
+        }
+
+        // TODO: Implement actual update logic here
+        console.log("Saving changes...", { username, email, password });
+    };
 
     if (isLoading || !user) {
         return null;
@@ -33,7 +48,13 @@ export default function ManageAccountPage() {
                 </h1>
                 <p className="text-[var(--text2-color)] mb-8">Update your personal preferences and settings.</p>
 
-                <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                {error && (
+                    <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-xl mb-6 text-sm">
+                        {error}
+                    </div>
+                )}
+
+                <form className="space-y-6" onSubmit={handleSubmit}>
                     <div className="space-y-2">
                         <label htmlFor="username" className="block text-sm font-medium text-[var(--text2-color)] uppercase tracking-wider ml-1">
                             Username
@@ -75,6 +96,23 @@ export default function ManageAccountPage() {
                             placeholder="Leave blank to keep current password"
                         />
                     </div>
+
+                    {password && (
+                        <div className="space-y-2 animate-fade-in-down">
+                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-[var(--text2-color)] uppercase tracking-wider ml-1">
+                                Confirm New Password
+                            </label>
+                            <input
+                                id="confirmPassword"
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                className={`w-full bg-[var(--background)]/50 border rounded-xl px-4 py-3 text-[var(--foreground)] placeholder-[var(--foreground)]/30 focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50 focus:border-transparent transition-all duration-200 ${password !== confirmPassword && confirmPassword ? 'border-red-500/50' : 'border-[var(--foreground)]/10'
+                                    }`}
+                                placeholder="Confirm your new password"
+                            />
+                        </div>
+                    )}
 
                     <div className="pt-4 flex justify-end gap-3">
                         <button
