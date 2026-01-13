@@ -121,6 +121,10 @@ public class AuthController {
         User user = userOptional.get();
 
         if (updateRequest.getUsername() != null && !updateRequest.getUsername().isEmpty()) {
+            Optional<User> existingUsername = userRepository.findByUsername(updateRequest.getUsername());
+            if (existingUsername.isPresent() && !existingUsername.get().getId().equals(user.getId())) {
+                return ResponseEntity.badRequest().body("Username is already in use");
+            }
             user.setUsername(updateRequest.getUsername());
         }
 
