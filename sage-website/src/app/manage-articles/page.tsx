@@ -13,7 +13,6 @@ interface Article {
     publishedDate: string;
     status: string;
     username?: string;
-    uploader?: User;
 }
 
 export default function ArticlesPage() {
@@ -220,13 +219,6 @@ export default function ArticlesPage() {
                                                                 {article.username.charAt(0).toUpperCase()}
                                                             </div>
                                                             <span>{article.username}</span>
-                                                        </div>
-                                                    ) : article.uploader ? (
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-6 h-6 rounded-full bg-[var(--accent-color)] flex items-center justify-center text-[var(--background)] text-xs font-bold">
-                                                                {article.uploader.username.charAt(0).toUpperCase()}
-                                                            </div>
-                                                            <span>{article.uploader.username}</span>
                                                         </div>
                                                     ) : (
                                                         <span className="text-[var(--text2-color)] italic">Unknown</span>

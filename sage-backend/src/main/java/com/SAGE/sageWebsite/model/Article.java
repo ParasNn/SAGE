@@ -26,10 +26,6 @@ public class Article {
     @Column(name = "user_id")
     private Integer userId;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
-    private User uploader;
-
     @Column(length = 20)
     private String status = "draft";
 
@@ -91,14 +87,6 @@ public class Article {
 
     public void setUserId(Integer userId) {
         this.userId = userId;
-    }
-
-    public User getUploader() {
-        return uploader;
-    }
-
-    public void setUploader(User uploader) {
-        this.uploader = uploader;
     }
 
     public String getStatus() {
