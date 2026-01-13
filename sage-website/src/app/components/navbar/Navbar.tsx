@@ -25,10 +25,9 @@ const Navbar = () => {
         };
     }, []);
 
-    const handleLogout = () => {
-        logout();
+    const handleLogout = async () => {
+        await logout();
         setIsDropdownOpen(false);
-        router.push('/');
     };
 
     return (

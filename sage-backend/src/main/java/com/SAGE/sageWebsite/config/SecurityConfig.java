@@ -21,7 +21,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/articles/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/articles/**").authenticated()
-                        .anyRequest().authenticated());
+                        .anyRequest().authenticated())
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .deleteCookies("JSESSIONID")
+                        .invalidateHttpSession(true)
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_OK);
+                        }));
         return http.build();
     }
 

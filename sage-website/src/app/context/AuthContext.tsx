@@ -13,7 +13,7 @@ export interface User {
 interface AuthContextType {
     user: User | null;
     login: (email: string, password: string) => Promise<boolean>;
-    logout: () => void;
+    logout: () => Promise<void>;
     isLoading: boolean;
 }
 
@@ -102,7 +102,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    const logout = () => {
+    const logout = async () => {
+        try {
+            await fetch("http://localhost:8080/api/auth/logout", {
+                method: "POST",
+                credentials: "include"
+            });
+        } catch (error) {
+            console.error("Logout request failed", error);
+        }
         setUser(null);
         localStorage.removeItem("sage_user");
         router.push("/login");
