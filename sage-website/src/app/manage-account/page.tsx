@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
 
 export default function ManageAccountPage() {
-    const { user, isLoading } = useAuth();
+    const { user, isLoading, updateUser } = useAuth();
     const router = useRouter();
 
     const [username, setUsername] = useState('');
@@ -13,6 +13,8 @@ export default function ManageAccountPage() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         if (!isLoading && !user) {
@@ -23,17 +25,49 @@ export default function ManageAccountPage() {
         }
     }, [isLoading, user, router]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setSuccess('');
+        setIsSaving(true);
 
         if (password && password !== confirmPassword) {
             setError("Passwords do not match");
+            setIsSaving(false);
             return;
         }
 
-        // TODO: Implement actual update logic here
-        console.log("Saving changes...", { username, email, password });
+        try {
+            const response = await fetch("http://localhost:8080/api/auth/update", {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({
+                    username: username !== user?.username ? username : undefined,
+                    email: email !== user?.email ? email : undefined,
+                    password: password || undefined
+                }),
+            });
+
+            if (response.ok) {
+                const updatedUser = await response.json();
+                updateUser(updatedUser);
+                setSuccess("Account updated successfully!");
+                setPassword('');
+                setConfirmPassword('');
+                router.refresh();
+            } else {
+                const errorMsg = await response.text();
+                setError(errorMsg || "Failed to update account");
+            }
+        } catch (err) {
+            console.error(err);
+            setError("An unexpected error occurred");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     if (isLoading || !user) {
@@ -49,8 +83,16 @@ export default function ManageAccountPage() {
                 <p className="text-[var(--text2-color)] mb-8">Update your personal preferences and settings.</p>
 
                 {error && (
-                    <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-xl mb-6 text-sm">
+                    <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-xl mb-6 text-sm flex items-center gap-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         {error}
+                    </div>
+                )}
+
+                {success && (
+                    <div className="bg-green-500/10 border border-green-500/20 text-green-500 px-4 py-3 rounded-xl mb-6 text-sm flex items-center gap-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                        {success}
                     </div>
                 )}
 
@@ -119,14 +161,24 @@ export default function ManageAccountPage() {
                             type="button"
                             onClick={() => router.back()}
                             className="px-6 py-3 rounded-xl border border-[var(--text2-color)]/20 text-[var(--foreground)] hover:bg-[var(--foreground)]/5 transition-colors font-bold"
+                            disabled={isSaving}
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="px-8 py-3 rounded-xl bg-[var(--accent-color)] text-[var(--background)] font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 transform"
+                            className={`px-8 py-3 rounded-xl bg-[var(--accent-color)] text-[var(--background)] font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 transform flex items-center justify-center min-w-[140px] ${isSaving ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            disabled={isSaving}
                         >
-                            Save Changes
+                            {isSaving ? (
+                                <span className="flex items-center gap-2">
+                                    <svg className="animate-spin h-5 w-5 text-[var(--background)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Saving...
+                                </span>
+                            ) : "Save Changes"}
                         </button>
                     </div>
                 </form>

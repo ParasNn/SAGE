@@ -105,4 +105,50 @@ public class AuthController {
                         "role", user.getRole())))
                 .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
+
+    @PatchMapping("/update")
+    public ResponseEntity<?> updateUser(@RequestBody com.SAGE.sageWebsite.dto.UserUpdateDTO updateRequest,
+            java.security.Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Optional<User> userOptional = userRepository.findByEmail(principal.getName());
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+
+        User user = userOptional.get();
+
+        if (updateRequest.getUsername() != null && !updateRequest.getUsername().isEmpty()) {
+            user.setUsername(updateRequest.getUsername());
+        }
+
+        if (updateRequest.getEmail() != null && !updateRequest.getEmail().isEmpty()) {
+            // Check if email is taken by another user
+            Optional<User> existingUser = userRepository.findByEmail(updateRequest.getEmail());
+            if (existingUser.isPresent() && !existingUser.get().getId().equals(user.getId())) {
+                return ResponseEntity.badRequest().body("Email is already in use");
+            }
+            user.setEmail(updateRequest.getEmail());
+        }
+
+        if (updateRequest.getPassword() != null && !updateRequest.getPassword().isEmpty()) {
+            user.setPasswordHash(passwordEncoder.encode(updateRequest.getPassword()));
+        }
+
+        userRepository.save(user);
+
+        // Update security context if email changed (since email is the username in
+        // Spring Security here)
+        // Note: For simplicity, we might ask the user to re-login if they change their
+        // email,
+        // but for now we'll just return the updated info.
+
+        return ResponseEntity.ok(Map.of(
+                "id", user.getId(),
+                "username", user.getUsername(),
+                "email", user.getEmail(),
+                "role", user.getRole()));
+    }
 }
