@@ -155,4 +155,27 @@ public class AuthController {
                 "email", user.getEmail(),
                 "role", user.getRole()));
     }
+
+    @GetMapping("/users")
+    public ResponseEntity<?> getAllUsers(java.security.Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Optional<User> currentUser = userRepository.findByEmail(principal.getName());
+        if (currentUser.isEmpty() || !"admin".equalsIgnoreCase(currentUser.get().getRole())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+
+        java.util.List<Map<String, Object>> users = userRepository.findAll().stream()
+                .map(u -> Map.<String, Object>of(
+                        "id", u.getId(),
+                        "username", u.getUsername(),
+                        "email", u.getEmail(),
+                        "role", u.getRole() != null ? u.getRole() : "User",
+                        "createdAt", u.getCreatedAt() != null ? u.getCreatedAt().toString() : ""))
+                .collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(users);
+    }
 }

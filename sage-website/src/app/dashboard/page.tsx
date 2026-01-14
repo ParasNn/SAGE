@@ -83,6 +83,14 @@ export default function DashboardPage() {
                                         Invite New User
                                     </Link>
                                 )}
+                                {user.role?.toLowerCase() === 'admin' && (
+                                    <Link
+                                        href="/manage-users"
+                                        className="w-full text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
+                                    >
+                                        Manage Users
+                                    </Link>
+                                )}
                             </div>
                         </div>
                     )}
