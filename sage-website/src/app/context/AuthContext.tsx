@@ -2,9 +2,11 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
+import { User as SupabaseUser } from "@supabase/supabase-js";
 
 export interface User {
-    id: number;
+    id: string; // Changed from number to string for Supabase UUID
     username: string;
     email: string;
     role?: string;
@@ -24,102 +26,79 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
+    const supabase = createClient();
 
     useEffect(() => {
         const initAuth = async () => {
-            // Optimistically load from localStorage first
-            const storedUser = localStorage.getItem("sage_user");
-            if (storedUser) {
-                try {
-                    setUser(JSON.parse(storedUser));
-                } catch (error) {
-                    console.error("Failed to parse user from local storage", error);
-                }
-            }
+            setIsLoading(true);
+            const { data: { user: sbUser } } = await supabase.auth.getUser();
 
-            // Verify with backend
-            try {
-                const response = await fetch("http://localhost:8080/api/auth/me", {
-                    credentials: "include"
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    const userData: User = {
-                        id: data.id,
-                        username: data.username,
-                        email: data.email,
-                        role: data.role
-                    };
-                    setUser(userData);
-                    localStorage.setItem("sage_user", JSON.stringify(userData));
-                } else {
-                    // Session invalid or expired
-                    if (storedUser) {
-                        // Only clear and redirect if we thought we were logged in
-                        // logic: if !response.ok, backend says "not logged in".
-                        setUser(null);
-                        localStorage.removeItem("sage_user");
-                    }
-                }
-            } catch (error) {
-                console.error("Session check failed", error);
-            } finally {
-                setIsLoading(false);
+            if (sbUser) {
+                // Map Supabase user to our User interface
+                // Note: You might need a 'profiles' table to store username and role if they aren't in user_metadata
+                const userData: User = {
+                    id: sbUser.id,
+                    username: sbUser.user_metadata?.username || sbUser.email?.split('@')[0] || "User",
+                    email: sbUser.email || "",
+                    role: sbUser.user_metadata?.role || "user" // Default to user if not found
+                };
+                setUser(userData);
+            } else {
+                setUser(null);
             }
+            setIsLoading(false);
         };
 
         initAuth();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (session?.user) {
+                const userData: User = {
+                    id: session.user.id,
+                    username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || "User",
+                    email: session.user.email || "",
+                    role: session.user.user_metadata?.role || "user"
+                };
+                setUser(userData);
+            } else {
+                setUser(null);
+            }
+            setIsLoading(false);
+        });
+
+        return () => {
+            subscription.unsubscribe();
+        };
     }, []);
 
     const login = async (email: string, password: string): Promise<boolean> => {
         try {
-            const response = await fetch("http://localhost:8080/api/auth/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                credentials: "include", // Important for sessions
-                body: JSON.stringify({ email, password }),
+            const { error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                const userData: User = {
-                    id: data.id,
-                    username: data.username,
-                    email: data.email,
-                    role: data.role
-                };
-                setUser(userData);
-                localStorage.setItem("sage_user", JSON.stringify(userData));
-                return true;
-            } else {
+            if (error) {
+                console.error("Login failed:", error.message);
                 return false;
             }
+
+            return true;
         } catch (error) {
-            console.error("Login failed:", error);
+            console.error("Login unexpected error:", error);
             return false;
         }
     };
 
     const logout = async () => {
-        try {
-            await fetch("http://localhost:8080/api/auth/logout", {
-                method: "POST",
-                credentials: "include"
-            });
-        } catch (error) {
-            console.error("Logout request failed", error);
-        }
+        await supabase.auth.signOut();
         setUser(null);
-        localStorage.removeItem("sage_user");
         router.push("/login");
     };
 
     const updateUser = (userData: User) => {
         setUser(userData);
-        localStorage.setItem("sage_user", JSON.stringify(userData));
+        // logic to update user in Supabase (e.g. profiles table) would go here
     };
 
     return (
