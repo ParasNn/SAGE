@@ -178,4 +178,34 @@ public class AuthController {
 
         return ResponseEntity.ok(users);
     }
+
+    @PatchMapping("/users/{id}/role")
+    public ResponseEntity<?> updateUserRole(@PathVariable Integer id, @RequestBody Map<String, String> roleUpdate,
+            java.security.Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Optional<User> currentUser = userRepository.findByEmail(principal.getName());
+        if (currentUser.isEmpty() || !"admin".equalsIgnoreCase(currentUser.get().getRole())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+
+        Optional<User> userToUpdateOptional = userRepository.findById(id);
+        if (userToUpdateOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+
+        User userToUpdate = userToUpdateOptional.get();
+        String newRole = roleUpdate.get("role");
+
+        if (newRole == null || newRole.isEmpty()) {
+            return ResponseEntity.badRequest().body("Role is required");
+        }
+
+        userToUpdate.setRole(newRole);
+        userRepository.save(userToUpdate);
+
+        return ResponseEntity.ok(Map.of("message", "User role updated successfully"));
+    }
 }

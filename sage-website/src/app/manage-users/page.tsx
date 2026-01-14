@@ -59,6 +59,30 @@ export default function ManageUsersPage() {
         }
     };
 
+    const handleRoleChange = async (userId: number, newRole: string) => {
+        // Optimistic update
+        setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
+
+        try {
+            const response = await fetch(`http://localhost:8080/api/auth/users/${userId}/role`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({ role: newRole }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to update role");
+            }
+        } catch (error) {
+            console.error("Error updating role:", error);
+            setError("Failed to update user role");
+            fetchUsers(); // Revert changes
+        }
+    };
+
     if (isLoading) {
         return null;
     }
@@ -144,14 +168,22 @@ export default function ManageUsersPage() {
                                                 {userData.email}
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${userData.role.toLowerCase() === 'admin'
-                                                        ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
-                                                        : userData.role.toLowerCase() === 'officer'
-                                                            ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                                                            : 'bg-green-500/10 text-green-400 border border-green-500/20'
-                                                    }`}>
-                                                    {userData.role.toUpperCase()}
-                                                </span>
+                                                <select
+                                                    value={userData.role.toLowerCase()}
+                                                    onChange={(e) => handleRoleChange(userData.id, e.target.value)}
+                                                    className={`text-xs font-medium border rounded-full px-2 py-1 outline-none cursor-pointer appearance-none text-center min-w-[100px]
+                                                                ${userData.role.toLowerCase() === 'admin'
+                                                            ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'
+                                                            : userData.role.toLowerCase() === 'officer'
+                                                                ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                                                : 'bg-green-500/10 text-green-400 border-green-500/20'
+                                                        }`}
+                                                    style={{ textAlignLast: 'center' }}
+                                                >
+                                                    <option value="user" className="bg-[var(--secondary-color)] text-[var(--foreground)]">User</option>
+                                                    <option value="officer" className="bg-[var(--secondary-color)] text-[var(--foreground)]">Officer</option>
+                                                    <option value="admin" className="bg-[var(--secondary-color)] text-[var(--foreground)]">Admin</option>
+                                                </select>
                                             </td>
                                             <td className="px-6 py-4 text-[var(--text2-color)]">
                                                 {userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'N/A'}
