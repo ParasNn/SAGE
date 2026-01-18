@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
-import ContentBox from '../components/upload_components/ContentBox';
-
-import { useAuth } from '../context/AuthContext';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import ContentBox from '../components/upload_components/ContentBox';
+import { useAuth } from '../context/AuthContext';
+import { createClient } from '@/utils/supabase/client';
 
 export default function UploadPage() {
     const { user, isLoading } = useAuth();
@@ -15,6 +14,7 @@ export default function UploadPage() {
     const [content, setContent] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+    const supabase = createClient();
 
     useEffect(() => {
         if (!isLoading && !user) {
@@ -26,37 +26,35 @@ export default function UploadPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!user) return;
+
         setIsSubmitting(true);
         setMessage(null);
 
         try {
-            const response = await fetch('http://localhost:8080/api/articles', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({
+            const { error } = await supabase
+                .from('articles')
+                .insert({
                     title,
-                    author,
+                    authors: author,
                     content,
-                    // userId removed as auth is not required
-                }),
-            });
+                    username: user.username,
+                    user: user.id,
+                    status: 'draft'
+                });
 
-            if (response.ok) {
+            if (!error) {
                 setMessage({ text: 'Article published successfully!', type: 'success' });
                 setTitle('');
-                setAuthor('');
+                setAuthor(user.username); // Reset to username
                 setContent('');
             } else {
-                const errorText = await response.text();
-                console.error('Upload failed. Status:', response.status, 'Body:', errorText);
-                setMessage({ text: `Failed to publish: ${errorText || 'Unknown error'}`, type: 'error' });
+                console.error('Upload failed:', error);
+                setMessage({ text: `Failed to publish: ${error.message}`, type: 'error' });
             }
         } catch (error) {
             console.error('Error submitting article:', error);
-            setMessage({ text: 'An error occurred. Is the backend running?', type: 'error' });
+            setMessage({ text: 'An unexpected error occurred.', type: 'error' });
         } finally {
             setIsSubmitting(false);
         }

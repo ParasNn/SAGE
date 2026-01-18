@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useAuth, User } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { createClient } from '@/utils/supabase/client';
 
 interface Article {
     id: number;
@@ -12,7 +13,6 @@ interface Article {
     content: string;
     publishedDate: string;
     status: string;
-    uploader?: User;
 }
 
 export default function MyArticlesPage() {
@@ -21,6 +21,7 @@ export default function MyArticlesPage() {
     const [articles, setArticles] = useState<Article[]>([]);
     const [loadingArticles, setLoadingArticles] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const supabase = createClient();
 
     useEffect(() => {
         if (!isLoading) {
@@ -35,14 +36,35 @@ export default function MyArticlesPage() {
     const fetchMyArticles = async () => {
         try {
             setLoadingArticles(true);
-            const response = await fetch('http://localhost:8080/api/articles/my', {
-                credentials: 'include'
-            });
-            if (!response.ok) {
-                throw new Error('Failed to fetch articles');
-            }
-            const data = await response.json();
-            setArticles(data);
+
+            // Supabase query to get articles for the current user
+            // We can trust RLS if enabled, but adding .eq('user', user?.id) makes it explicit and safe
+            const { data, error } = await supabase
+                .from('articles')
+                .select('*')
+                .eq('user', user!.id)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            // Map Supabase fields to Article interface
+            const mappedArticles: Article[] = (data || []).map((item: {
+                id: number;
+                title: string;
+                authors: string;
+                content: string;
+                created_at: string;
+                status: string;
+            }) => ({
+                id: item.id,
+                title: item.title,
+                author: item.authors, // Map authors -> author
+                content: item.content,
+                publishedDate: item.created_at, // Map created_at -> publishedDate
+                status: item.status
+            }));
+
+            setArticles(mappedArticles);
         } catch (err: unknown) {
             console.error(err);
             if (err instanceof Error) {
@@ -110,7 +132,7 @@ export default function MyArticlesPage() {
                                 {articles.length === 0 ? (
                                     <tr>
                                         <td colSpan={5} className="px-6 py-12 text-center text-[var(--text2-color)]">
-                                            You haven't uploaded any articles yet.
+                                            You haven&apos;t uploaded any articles yet.
                                         </td>
                                     </tr>
                                 ) : (

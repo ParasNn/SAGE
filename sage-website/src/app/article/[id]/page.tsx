@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import ArticlePage from '../../components/ArticlePage';
 import { useAuth } from '../../context/AuthContext';
+import { createClient } from '@/utils/supabase/client';
 
 interface Article {
     id: number;
@@ -19,6 +20,7 @@ export default function Page() {
     const params = useParams();
     const id = params?.id;
     const { user, isLoading } = useAuth();
+    const supabase = createClient();
 
     const [article, setArticle] = useState<Article | null>(null);
     const [loading, setLoading] = useState(true);
@@ -32,17 +34,30 @@ export default function Page() {
                 setLoading(true);
                 const articleId = Array.isArray(id) ? id[0] : id;
 
-                const response = await fetch(`http://localhost:8080/api/articles/${articleId}`);
+                const { data, error } = await supabase
+                    .from('articles')
+                    .select('*')
+                    .eq('id', articleId)
+                    .single();
 
-                if (!response.ok) {
-                    if (response.status === 404) {
+                if (error) {
+                    if (error.code === 'PGRST116') { // code for no rows returned/0 results
                         throw new Error('Article not found');
                     }
-                    throw new Error('Failed to fetch article');
+                    throw error;
                 }
 
-                const data = await response.json();
-                setArticle(data);
+                // Map Supabase data to Article interface
+                const mappedArticle: Article = {
+                    id: data.id,
+                    title: data.title,
+                    author: data.authors, // Map authors -> author
+                    content: data.content,
+                    publishedDate: data.created_at, // Map created_at -> publishedDate
+                    status: data.status,
+                };
+
+                setArticle(mappedArticle);
             } catch (err: unknown) {
                 console.error(err);
                 if (err instanceof Error) {

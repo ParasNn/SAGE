@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useAuth, User } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { createClient } from '@/utils/supabase/client';
 
 interface Article {
     id: number;
@@ -13,6 +14,7 @@ interface Article {
     publishedDate: string;
     status: string;
     username?: string;
+    user: string; // uuid
 }
 
 export default function ArticlesPage() {
@@ -23,6 +25,7 @@ export default function ArticlesPage() {
     const [error, setError] = useState<string | null>(null);
     const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const supabase = createClient();
 
     useEffect(() => {
         if (!isLoading) {
@@ -33,8 +36,6 @@ export default function ArticlesPage() {
 
             const role = user.role?.toLowerCase() || '';
             if (role !== 'admin' && role !== 'officer') {
-                // Determine if we should redirect or just show accessed denied
-                // For now, let's just show access denied in the render
                 return;
             }
 
@@ -45,12 +46,35 @@ export default function ArticlesPage() {
     const fetchArticles = async () => {
         try {
             setLoadingArticles(true);
-            const response = await fetch('http://localhost:8080/api/articles');
-            if (!response.ok) {
-                throw new Error('Failed to fetch articles');
-            }
-            const data = await response.json();
-            setArticles(data);
+            const { data, error } = await supabase
+                .from('articles')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            // Map Supabase fields to Article interface
+            const mappedArticles: Article[] = (data || []).map((item: {
+                id: number;
+                title: string;
+                authors: string;
+                content: string;
+                created_at: string;
+                status: string;
+                username: string;
+                user: string;
+            }) => ({
+                id: item.id,
+                title: item.title,
+                author: item.authors, // Mapped from authors
+                content: item.content,
+                publishedDate: item.created_at, // Mapped from created_at
+                status: item.status,
+                username: item.username,
+                user: item.user
+            }));
+
+            setArticles(mappedArticles);
         } catch (err: unknown) {
             console.error(err);
             if (err instanceof Error) {
@@ -70,20 +94,12 @@ export default function ArticlesPage() {
                 a.id === articleId ? { ...a, status: newStatus } : a
             ));
 
-            const response = await fetch(`http://localhost:8080/api/articles/${articleId}/status`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    status: newStatus
-                }),
-            });
+            const { error } = await supabase
+                .from('articles')
+                .update({ status: newStatus })
+                .eq('id', articleId);
 
-            if (!response.ok) {
-                throw new Error('Failed to update status');
-            }
+            if (error) throw error;
         } catch (error) {
             console.error('Error updating status:', error);
             // Revert on error
@@ -101,14 +117,12 @@ export default function ArticlesPage() {
 
         setIsDeleting(true);
         try {
-            const response = await fetch(`http://localhost:8080/api/articles/${articleToDelete.id}`, {
-                method: 'DELETE',
-                credentials: 'include'
-            });
+            const { error } = await supabase
+                .from('articles')
+                .delete()
+                .eq('id', articleToDelete.id);
 
-            if (!response.ok) {
-                throw new Error('Failed to delete article');
-            }
+            if (error) throw error;
 
             // Remove from state
             setArticles(articles.filter(a => a.id !== articleToDelete.id));
@@ -273,7 +287,7 @@ export default function ArticlesPage() {
                     <div className="bg-[var(--secondary-color)] border border-[var(--text2-color)]/20 rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all scale-100">
                         <h3 className="text-xl font-bold text-[var(--foreground)] mb-2">Delete Article?</h3>
                         <p className="text-[var(--text2-color)] mb-6">
-                            Are you sure you want to delete <span className="text-[var(--accent-color)] font-semibold">"{articleToDelete.title}"</span>? This action cannot be undone.
+                            Are you sure you want to delete <span className="text-[var(--accent-color)] font-semibold">&quot;{articleToDelete.title}&quot;</span>? This action cannot be undone.
                         </p>
 
                         <div className="flex justify-end gap-3">
