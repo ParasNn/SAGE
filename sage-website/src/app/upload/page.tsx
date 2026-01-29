@@ -39,7 +39,7 @@ export default function UploadPage() {
                     authors: author,
                     content,
                     username: user.username,
-                    user: user.id,
+                    user_id: user.id,
                     status: 'draft'
                 });
 

@@ -14,7 +14,7 @@ interface Article {
     publishedDate: string;
     status: string;
     username?: string;
-    user: string; // uuid
+    user_id: string; // uuid
 }
 
 export default function ArticlesPage() {
@@ -62,7 +62,7 @@ export default function ArticlesPage() {
                 created_at: string;
                 status: string;
                 username: string;
-                user: string;
+                user_id: string;
             }) => ({
                 id: item.id,
                 title: item.title,
@@ -71,7 +71,7 @@ export default function ArticlesPage() {
                 publishedDate: item.created_at, // Mapped from created_at
                 status: item.status,
                 username: item.username,
-                user: item.user
+                user_id: item.user_id
             }));
 
             setArticles(mappedArticles);
