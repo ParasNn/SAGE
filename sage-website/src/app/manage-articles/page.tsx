@@ -202,7 +202,7 @@ export default function ArticlesPage() {
                                         <th className="px-6 py-4 font-semibold">Date</th>
                                         <th className="px-6 py-4 font-semibold">Uploaded By</th>
                                         <th className="px-6 py-4 font-semibold">Status</th>
-                                        <th className="px-6 py-4 font-semibold">Actions</th>
+                                        <th className="px-6 py-4 font-semibold text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-[var(--text2-color)]/10">

@@ -21,6 +21,8 @@ export default function MyArticlesPage() {
     const [articles, setArticles] = useState<Article[]>([]);
     const [loadingArticles, setLoadingArticles] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     const supabase = createClient();
 
     useEffect(() => {
@@ -77,6 +79,37 @@ export default function MyArticlesPage() {
         }
     };
 
+    const handleDeleteClick = (article: Article) => {
+        setArticleToDelete(article);
+    };
+
+    const confirmDelete = async () => {
+        if (!articleToDelete) return;
+
+        setIsDeleting(true);
+        try {
+            const { error } = await supabase
+                .from('articles')
+                .delete()
+                .eq('id', articleToDelete.id);
+
+            if (error) throw error;
+
+            // Remove from state
+            setArticles(articles.filter(a => a.id !== articleToDelete.id));
+            setArticleToDelete(null);
+        } catch (error) {
+            console.error('Error deleting article:', error);
+            alert('Failed to delete article. Please try again.');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const cancelDelete = () => {
+        setArticleToDelete(null);
+    };
+
     if (isLoading) {
         return null; // Or a loading spinner
     }
@@ -121,35 +154,35 @@ export default function MyArticlesPage() {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-[var(--secondary-color)] border-b border-[var(--text2-color)]/10 text-[var(--text2-color)] uppercase text-xs tracking-wider">
-                                    <th className="px-6 py-4 font-semibold">Title</th>
-                                    <th className="px-6 py-4 font-semibold">Author (Field)</th>
-                                    <th className="px-6 py-4 font-semibold">Published Date</th>
-                                    <th className="px-6 py-4 font-semibold">Status</th>
-                                    <th className="px-6 py-4 font-semibold">Actions</th>
+                                    <th className="px-4 py-4 font-semibold w-[30%]">Title</th>
+                                    <th className="px-4 py-4 font-semibold w-[20%] whitespace-nowrap">Author (Field)</th>
+                                    <th className="px-4 py-4 font-semibold w-[20%] whitespace-nowrap">Published Date</th>
+                                    <th className="px-4 py-4 font-semibold w-[15%] whitespace-nowrap">Status</th>
+                                    <th className="px-4 py-4 font-semibold w-[15%] text-right whitespace-nowrap">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[var(--text2-color)]/10">
                                 {articles.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-12 text-center text-[var(--text2-color)]">
+                                        <td colSpan={5} className="px-4 py-12 text-center text-[var(--text2-color)]">
                                             You haven&apos;t uploaded any articles yet.
                                         </td>
                                     </tr>
                                 ) : (
                                     articles.map((article) => (
                                         <tr key={article.id} className="hover:bg-[var(--secondary-color)]/50 transition-colors duration-150">
-                                            <td className="px-6 py-4 font-medium text-[var(--foreground)]">
+                                            <td className="px-4 py-4 font-medium text-[var(--foreground)]">
                                                 <Link href={`/article/${article.id}`} className="hover:text-[var(--accent-color)] transition-colors">
                                                     {article.title}
                                                 </Link>
                                             </td>
-                                            <td className="px-6 py-4 text-[var(--text2-color)]">
+                                            <td className="px-4 py-4 text-[var(--text2-color)] whitespace-nowrap">
                                                 {article.author}
                                             </td>
-                                            <td className="px-6 py-4 text-[var(--text2-color)]">
+                                            <td className="px-4 py-4 text-[var(--text2-color)] whitespace-nowrap">
                                                 {new Date(article.publishedDate).toLocaleDateString()}
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-4 py-4 whitespace-nowrap">
                                                 <span
                                                     className={`text-xs font-medium px-3 py-1 rounded-full
                                                         ${(article.status?.toLowerCase() === 'published' || article.status?.toLowerCase() === 'approved')
@@ -165,16 +198,57 @@ export default function MyArticlesPage() {
                                                     {article.status ? (article.status.charAt(0).toUpperCase() + article.status.slice(1).replace('_', ' ')) : 'Pending'}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-right flex items-center justify-end gap-3">
+                                            <td className="px-4 py-4 text-right flex items-center justify-end gap-3 whitespace-nowrap">
                                                 <Link href={`/article/${article.id}`} className="text-[var(--accent-color)] hover:underline text-sm font-medium">
                                                     View
                                                 </Link>
+                                                <button
+                                                    onClick={() => handleDeleteClick(article)}
+                                                    className="text-red-400 hover:text-red-300 hover:underline text-sm font-medium"
+                                                >
+                                                    Delete
+                                                </button>
                                             </td>
                                         </tr>
                                     ))
                                 )}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            )}
+            {/* Delete Confirmation Modal */}
+            {articleToDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-[var(--secondary-color)] border border-[var(--text2-color)]/20 rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all scale-100">
+                        <h3 className="text-xl font-bold text-[var(--foreground)] mb-2">Delete Article?</h3>
+                        <p className="text-[var(--text2-color)] mb-6">
+                            Are you sure you want to delete <span className="text-[var(--accent-color)] font-semibold">&quot;{articleToDelete.title}&quot;</span>? This action cannot be undone.
+                        </p>
+
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={cancelDelete}
+                                className="px-4 py-2 rounded-lg border border-[var(--text2-color)]/20 text-[var(--foreground)] hover:bg-[var(--foreground)]/5 transition-colors font-medium"
+                                disabled={isDeleting}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                className="px-4 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors font-medium flex items-center gap-2"
+                                disabled={isDeleting}
+                            >
+                                {isDeleting ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                                        Deleting...
+                                    </>
+                                ) : (
+                                    'Delete Article'
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
