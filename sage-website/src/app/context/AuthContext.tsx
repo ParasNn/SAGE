@@ -35,14 +35,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             if (sbUser) {
                 // Map Supabase user to our User interface
-                // Note: You might need a 'profiles' table to store username and role if they aren't in user_metadata
-                const userData: User = {
+                // Initial user state with default/metadata role
+                const initialUser: User = {
                     id: sbUser.id,
                     username: sbUser.user_metadata?.username || sbUser.email?.split('@')[0] || "User",
                     email: sbUser.email || "",
-                    role: sbUser.user_metadata?.role || "user" // Default to user if not found
+                    role: sbUser.user_metadata?.role || "user"
                 };
-                setUser(userData);
+                setUser(initialUser);
+
+                // Fetch true role from profiles table
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', sbUser.id)
+                    .single();
+
+                if (profile?.role) {
+                    setUser(prev => prev ? { ...prev, role: profile.role } : null);
+                }
             } else {
                 setUser(null);
             }
@@ -52,7 +63,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         initAuth();
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            setIsLoading(true);
             if (session?.user) {
+                // Immediate update with session data
                 const userData: User = {
                     id: session.user.id,
                     username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || "User",
@@ -60,10 +73,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     role: session.user.user_metadata?.role || "user"
                 };
                 setUser(userData);
+
+                // Delayed role fetch
+                setTimeout(async () => {
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', session.user.id)
+                        .single();
+
+                    if (profile?.role) {
+                        setUser(prev => prev ? { ...prev, role: profile.role } : null);
+                    }
+                    setIsLoading(false);
+                }, 1000); // 1 second delay
             } else {
                 setUser(null);
+                setIsLoading(false);
             }
-            setIsLoading(false);
         });
 
         return () => {

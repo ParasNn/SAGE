@@ -21,8 +21,30 @@ export default function DashboardPage() {
     }, [isLoading, user, router]);
 
     if (!isMounted || isLoading || !user) {
-        return null; // Or a loading spinner
+        return (
+            <div className="flex-1 flex items-center justify-center min-h-[50vh]">
+                <div className="relative flex items-center justify-center">
+                    {/* Smooth gradient spinner matching reference */}
+                    <div
+                        className="h-24 w-24 rounded-full animate-spin shadow-[0_0_10px_var(--accent-color)/10]"
+                        style={{
+                            background: `conic-gradient(from 0deg, transparent, var(--accent-color) 70%, transparent 70%)`,
+                            maskImage: 'radial-gradient(closest-side, transparent 82%, black 83%)',
+                            WebkitMaskImage: 'radial-gradient(closest-side, transparent 82%, black 83%)',
+                        }}
+                    ></div>
+
+                    <div className="absolute font-bold text-[var(--accent-color)] tracking-widest text-sm select-none">
+                        SAGE
+                    </div>
+                </div>
+            </div>
+        );
     }
+
+    console.log("Dashboard Debug - User:", user);
+    console.log("Dashboard Debug - Role:", user.role);
+    console.log("Dashboard Debug - Normalized Role:", user.role?.toLowerCase());
 
     return (
         <div className="container mx-auto px-4 py-12 animate-page-load-1">
