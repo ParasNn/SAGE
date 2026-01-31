@@ -1,17 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-    const { login } = useAuth();
+    const { login, user, isLoading } = useAuth();
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+    useEffect(() => {
+        if (!isLoading && user) {
+            router.push("/dashboard");
+        }
+    }, [user, isLoading, router]);
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
