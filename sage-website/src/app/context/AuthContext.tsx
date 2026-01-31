@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     .single();
 
                 if (profile?.role) {
-                    setUser(prev => prev ? { ...prev, role: profile.role } : null);
+                    setUser(prev => prev ? { ...prev, role: profile.role.trim() } : null);
                 }
             } else {
                 setUser(null);
@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         .single();
 
                     if (profile?.role) {
-                        setUser(prev => prev ? { ...prev, role: profile.role } : null);
+                        setUser(prev => prev ? { ...prev, role: profile.role.trim() } : null);
                     }
                     setIsLoading(false);
                 }, 1000); // 1 second delay

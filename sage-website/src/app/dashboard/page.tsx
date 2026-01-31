@@ -85,9 +85,9 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    {(user.role?.toLowerCase() === 'admin' || user.role?.toLowerCase() === 'officer') && (
+                    {(user.role?.trim().toLowerCase() === 'admin' || user.role?.trim().toLowerCase() === 'officer') && (
                         <div className="bg-[var(--secondary-color)] rounded-xl p-6 border border-[var(--text2-color)]/20 shadow-lg hover:shadow-xl transition-all duration-300">
-                            <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">Admin Controls</h2>
+                            <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">Management Controls</h2>
                             <p className="text-[var(--text2-color)] mb-6">Manage users and system settings.</p>
 
                             <div className="flex flex-col gap-4">
@@ -97,7 +97,7 @@ export default function DashboardPage() {
                                 >
                                     Manage Articles
                                 </Link>
-                                {user.role?.toLowerCase() === 'admin' && (
+                                {user.role?.trim().toLowerCase() === 'admin' && (
                                     <Link
                                         href="/invite"
                                         className="w-full text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
@@ -105,7 +105,7 @@ export default function DashboardPage() {
                                         Invite New User
                                     </Link>
                                 )}
-                                {user.role?.toLowerCase() === 'admin' && (
+                                {user.role?.trim().toLowerCase() === 'admin' && (
                                     <Link
                                         href="/manage-users"
                                         className="w-full text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"

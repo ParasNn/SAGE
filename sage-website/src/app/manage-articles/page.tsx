@@ -34,7 +34,7 @@ export default function ArticlesPage() {
                 return;
             }
 
-            const role = user.role?.toLowerCase() || '';
+            const role = user.role?.trim().toLowerCase() || '';
             if (role !== 'admin' && role !== 'officer') {
                 return;
             }
@@ -147,7 +147,7 @@ export default function ArticlesPage() {
         return null; // Will redirect in useEffect
     }
 
-    const role = user.role?.toLowerCase() || '';
+    const role = user.role?.trim().toLowerCase() || '';
     if (role !== 'admin' && role !== 'officer') {
         return (
             <div className="container mx-auto px-4 py-20 text-center">
