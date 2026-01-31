@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
@@ -25,6 +25,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const isLoginFlow = useRef(false);
     const router = useRouter();
     const supabase = createClient();
 
@@ -43,29 +44,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     role: sbUser.user_metadata?.role || "user"
                 };
                 setUser(initialUser);
-
-                // Fetch true role from profiles table
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', sbUser.id)
-                    .single();
-
-                if (profile?.role) {
-                    setUser(prev => prev ? { ...prev, role: profile.role.trim() } : null);
-                }
             } else {
                 setUser(null);
             }
             setIsLoading(false);
         };
 
-        initAuth();
-
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            setIsLoading(true);
             if (session?.user) {
-                // Immediate update with session data
                 const userData: User = {
                     id: session.user.id,
                     username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || "User",
@@ -74,24 +60,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 };
                 setUser(userData);
 
-                // Delayed role fetch
-                setTimeout(async () => {
-                    const { data: profile } = await supabase
-                        .from('profiles')
-                        .select('role')
-                        .eq('id', session.user.id)
-                        .single();
-
-                    if (profile?.role) {
-                        setUser(prev => prev ? { ...prev, role: profile.role.trim() } : null);
-                    }
+                if (!isLoginFlow.current) {
                     setIsLoading(false);
-                }, 1000); // 1 second delay
+                }
             } else {
                 setUser(null);
-                setIsLoading(false);
+                if (!isLoginFlow.current) {
+                    setIsLoading(false);
+                }
             }
         });
+
+        initAuth();
 
         return () => {
             subscription.unsubscribe();
@@ -100,19 +80,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const login = async (email: string, password: string): Promise<boolean> => {
         try {
-            const { error } = await supabase.auth.signInWithPassword({
+            isLoginFlow.current = true;
+            setIsLoading(true);
+
+            const { data: { user: authUser }, error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             });
 
-            if (error) {
-                console.error("Login failed:", error.message);
+            if (error || !authUser) {
+                console.error("Login failed:", error?.message);
+                isLoginFlow.current = false;
+                setIsLoading(false);
                 return false;
             }
 
+            // Wait 0.5s
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Fetch role from profiles
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', authUser.id)
+                .single();
+
+            if (profile?.role) {
+                // Update JWT metadata
+                const { data: { user: updatedUser } } = await supabase.auth.updateUser({
+                    data: { role: profile.role }
+                });
+
+                if (updatedUser) {
+                    const userData: User = {
+                        id: updatedUser.id,
+                        username: updatedUser.user_metadata?.username || updatedUser.email?.split('@')[0] || "User",
+                        email: updatedUser.email || "",
+                        role: updatedUser.user_metadata?.role || "user"
+                    };
+                    setUser(userData);
+                }
+            }
+
+            isLoginFlow.current = false;
+            setIsLoading(false);
             return true;
         } catch (error) {
             console.error("Login unexpected error:", error);
+            isLoginFlow.current = false;
+            setIsLoading(false);
             return false;
         }
     };
