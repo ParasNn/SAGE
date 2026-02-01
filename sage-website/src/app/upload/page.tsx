@@ -20,7 +20,7 @@ export default function UploadPage() {
         if (!isLoading && !user) {
             router.push('/login');
         } else if (user && !author) {
-            setAuthor(user.username);
+            setAuthor(user.name || '');
         }
     }, [isLoading, user, router]);
 
@@ -46,7 +46,7 @@ export default function UploadPage() {
             if (!error) {
                 setMessage({ text: 'Article published successfully!', type: 'success' });
                 setTitle('');
-                setAuthor(user.username); // Reset to username
+                setAuthor(user.name || ''); // Reset to name only
                 setContent('');
             } else {
                 console.error('Upload failed:', error);

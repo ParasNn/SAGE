@@ -10,6 +10,7 @@ export interface User {
     username: string;
     email: string;
     role?: string;
+    name?: string;
 }
 
 interface AuthContextType {
@@ -41,7 +42,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     id: sbUser.id,
                     username: sbUser.user_metadata?.username || sbUser.email?.split('@')[0] || "User",
                     email: sbUser.email || "",
-                    role: sbUser.user_metadata?.role || "user"
+                    role: sbUser.user_metadata?.role || "user",
+                    name: sbUser.user_metadata?.name || ""
                 };
                 setUser(initialUser);
             } else {
@@ -56,7 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     id: session.user.id,
                     username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || "User",
                     email: session.user.email || "",
-                    role: session.user.user_metadata?.role || "user"
+                    role: session.user.user_metadata?.role || "user",
+                    name: session.user.user_metadata?.name || ""
                 };
                 setUser(userData);
 
@@ -98,27 +101,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Wait 0.1s
             await new Promise(resolve => setTimeout(resolve, 100));
 
-            // Fetch role from profiles
+            // Fetch role and full_name from profiles
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('role')
+                .select('role, full_name')
                 .eq('id', authUser.id)
                 .single();
 
-            if (profile?.role) {
-                // Update JWT metadata
-                const { data: { user: updatedUser } } = await supabase.auth.updateUser({
-                    data: { role: profile.role }
-                });
+            console.log('PROFILE DATA:', profile);
+            console.log('PROFILE ERROR:', error);
 
-                if (updatedUser) {
-                    const userData: User = {
-                        id: updatedUser.id,
-                        username: updatedUser.user_metadata?.username || updatedUser.email?.split('@')[0] || "User",
-                        email: updatedUser.email || "",
-                        role: updatedUser.user_metadata?.role || "user"
-                    };
-                    setUser(userData);
+            if (error) {
+                console.error('Error fetching profile:', error);
+                // You can return a 4xx here instead of letting it crash
+                throw error;
+            }
+
+            if (profile) {
+                console.log("Fetched role from profiles:", profile.role);
+                console.log("Fetched full_name from profiles:", profile.full_name);
+                const metadataUpdates: { role?: string; name?: string } = {};
+                if (profile.role) metadataUpdates.role = profile.role;
+                if (profile.full_name) metadataUpdates.name = profile.full_name;
+
+                if (Object.keys(metadataUpdates).length > 0) {
+                    // Update JWT metadata
+                    const { data: { user: updatedUser } } = await supabase.auth.updateUser({
+                        data: metadataUpdates
+                    });
+
+                    if (updatedUser) {
+                        const userData: User = {
+                            id: updatedUser.id,
+                            username: updatedUser.user_metadata?.username || updatedUser.email?.split('@')[0] || "User",
+                            email: updatedUser.email || "",
+                            role: updatedUser.user_metadata?.role || "user",
+                            name: updatedUser.user_metadata?.name || ""
+                        };
+                        setUser(userData);
+                    }
                 }
             }
 
