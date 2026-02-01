@@ -89,7 +89,7 @@ export default function Page() {
     }
 
     return (
-        <div className="flex-1 container mx-auto px-4 py-8 animate-page-load-1">
+        <div className="flex-1 container mx-auto px-4 py-8">
             {loading && (
                 <div className="flex flex-col items-center justify-center min-h-[50vh] text-[var(--text2-color)]">
                     <div className="w-12 h-12 border-4 border-[var(--accent-color)] border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -110,7 +110,9 @@ export default function Page() {
             )}
 
             {!loading && !error && article && (
-                <ArticlePage article={article} />
+                <div className="animate-page-load-1">
+                    <ArticlePage article={article} />
+                </div>
             )}
         </div>
     );
