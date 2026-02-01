@@ -32,11 +32,7 @@ export default function RootLayout({
             >
                 <AuthProvider>
                     <main className="min-h-screen bg-[var(--background)] relative overflow-hidden font-sans text-[var(--foreground)] p-4">
-                        {/* Decorative background elements */}
-                        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-                            <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-[var(--accent-color)] opacity-5 rounded-full blur-[100px]" />
-                            <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-[var(--text2-color)] opacity-5 rounded-full blur-[100px]" />
-                        </div>
+
 
                         <div className="relative z-10 flex flex-col min-h-screen">
                             <Navbar />
