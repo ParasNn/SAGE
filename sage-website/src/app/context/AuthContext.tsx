@@ -95,8 +95,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 return false;
             }
 
-            // Wait 0.5s
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Wait 0.1s
+            await new Promise(resolve => setTimeout(resolve, 100));
 
             // Fetch role from profiles
             const { data: profile } = await supabase
