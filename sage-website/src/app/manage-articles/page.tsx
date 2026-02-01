@@ -94,17 +94,34 @@ export default function ArticlesPage() {
                 a.id === articleId ? { ...a, status: newStatus } : a
             ));
 
-            const { error } = await supabase
+            const response = await supabase
                 .from('articles')
                 .update({ status: newStatus })
-                .eq('id', articleId);
+                .eq('id', articleId)
+                .select();
 
-            if (error) throw error;
+            const { data, error } = response;
+
+            if (error) {
+                console.error('Supabase Update Blocked/Failed. Full Response:', response);
+                throw error;
+            }
+
+            if (!data || data.length === 0) {
+                console.warn('Update succeeded but NO rows were modified. This usually triggers when RLS policies silently filter out the row to be updated.');
+                throw new Error('Update affected 0 rows (RLS Policy may be blocking this action). Check your permissions.');
+            }
+            console.log('Status updated successfully for article:', articleId, newStatus, 'Updated Record:', data);
         } catch (error) {
             console.error('Error updating status:', error);
+            if (typeof error === 'object' && error !== null) {
+                // @ts-ignore
+                console.error('Error Details:', { message: error.message, code: error.code, details: error.details, hint: error.hint });
+            }
             // Revert on error
             fetchArticles();
-            alert("Failed to update status");
+            // @ts-ignore
+            alert(`Failed to update status: ${error.message || 'Check console for details'}`);
         }
     };
 
@@ -240,7 +257,7 @@ export default function ArticlesPage() {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <select
-                                                        value={article.status || 'draft'}
+                                                        value={(article.status || 'draft').toLowerCase()}
                                                         onChange={(e) => handleStatusChange(article.id, e.target.value)}
                                                         className={`text-xs font-medium border rounded-full px-2 py-1 outline-none cursor-pointer appearance-none text-center min-w-[100px]
                                                             ${(article.status?.toLowerCase() === 'published' || article.status?.toLowerCase() === 'approved')
