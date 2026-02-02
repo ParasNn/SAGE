@@ -10,7 +10,7 @@ const ResearchPage = async () => {
         .select('*')
         .eq('status', 'published') // Ensure we only show published articles
         .order('created_at', { ascending: false })
-        .limit(5);
+        .limit(10);
 
     if (error) {
         console.error('Error fetching articles:', error);
@@ -24,7 +24,7 @@ const ResearchPage = async () => {
 
             <div className="container mx-auto px-4 py-12 animate-page-load-2">
                 <div className="max-w-4xl mx-auto">
-                    <h2 className="text-2xl font-semibold text-[var(--foreground)] mb-6">Recent Articles</h2>
+                    <h2 className="text-2xl font-semibold text-[var(--accent-color)] mb-6">Recent Articles</h2>
 
                     {(!articles || articles.length === 0) ? (
                         <p className="text-[var(--text2-color)]">No published articles found.</p>
