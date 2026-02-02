@@ -44,7 +44,7 @@ export default function UploadPage() {
                 });
 
             if (!error) {
-                setMessage({ text: 'Article published successfully!', type: 'success' });
+                setMessage({ text: 'Article uploaded successfully!', type: 'success' });
                 setTitle('');
                 setAuthor(user.name || ''); // Reset to name only
                 setContent('');

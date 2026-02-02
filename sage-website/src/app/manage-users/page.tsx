@@ -20,6 +20,10 @@ export default function ManageUsersPage() {
     const [users, setUsers] = useState<UserData[]>([]);
     const [loadingUsers, setLoadingUsers] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    // Role Update Confirmation State
+    const [userToUpdate, setUserToUpdate] = useState<UserData | null>(null);
+    const [pendingRole, setPendingRole] = useState<string | null>(null);
+    const [isUpdatingRole, setIsUpdatingRole] = useState(false);
     const supabase = createClient();
 
     useEffect(() => {
@@ -64,24 +68,43 @@ export default function ManageUsersPage() {
         }
     };
 
-    const handleRoleChange = async (userId: string, newRole: string) => {
-        // Optimistic update
-        setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
+    const handleRoleClick = (userData: UserData, newRole: string) => {
+        setUserToUpdate(userData);
+        setPendingRole(newRole);
+    };
 
+    const confirmRoleUpdate = async () => {
+        if (!userToUpdate || !pendingRole) return;
+
+        setIsUpdatingRole(true);
         try {
+            // Optimistic update
+            setUsers(users.map(u => u.id === userToUpdate.id ? { ...u, role: pendingRole } : u));
+
             const { error } = await supabase
                 .from('profiles')
-                .update({ role: newRole })
-                .eq('id', userId);
+                .update({ role: pendingRole })
+                .eq('id', userToUpdate.id);
 
             if (error) {
                 throw error;
             }
+
+            // Close modal after success
+            setUserToUpdate(null);
+            setPendingRole(null);
         } catch (error) {
             console.error("Error updating role:", error);
             setError("Failed to update user role");
             fetchUsers(); // Revert changes
+        } finally {
+            setIsUpdatingRole(false);
         }
+    };
+
+    const cancelRoleUpdate = () => {
+        setUserToUpdate(null);
+        setPendingRole(null);
     };
 
     if (isLoading) {
@@ -168,7 +191,7 @@ export default function ManageUsersPage() {
                                             <td className="px-6 py-4">
                                                 <select
                                                     value={userData.role?.toLowerCase() || 'user'}
-                                                    onChange={(e) => handleRoleChange(userData.id, e.target.value)}
+                                                    onChange={(e) => handleRoleClick(userData, e.target.value)}
                                                     className={`text-xs font-medium border rounded-full px-2 py-1 outline-none cursor-pointer appearance-none text-center min-w-[100px]
                                                                 ${userData.role?.toLowerCase() === 'admin'
                                                             ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'
@@ -194,6 +217,42 @@ export default function ManageUsersPage() {
                                 )}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            )}
+
+            {/* Role Change Confirmation Modal */}
+            {userToUpdate && pendingRole && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-[var(--secondary-color)] border border-[var(--text2-color)]/20 rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all scale-100">
+                        <h3 className="text-xl font-bold text-[var(--foreground)] mb-2">Update User Role?</h3>
+                        <p className="text-[var(--text2-color)] mb-6">
+                            Are you sure you want to change the role of <span className="text-[var(--accent-color)] font-semibold">&quot;{userToUpdate.full_name}&quot;</span> to <span className="font-bold underline capitalize">{pendingRole}</span>?
+                        </p>
+
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={cancelRoleUpdate}
+                                className="px-4 py-2 rounded-lg border border-[var(--text2-color)]/20 text-[var(--foreground)] hover:bg-[var(--foreground)]/5 transition-colors font-medium"
+                                disabled={isUpdatingRole}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmRoleUpdate}
+                                className="px-4 py-2 rounded-lg bg-[var(--accent-color)] text-[var(--background)] hover:opacity-90 transition-opacity font-medium flex items-center gap-2"
+                                disabled={isUpdatingRole}
+                            >
+                                {isUpdatingRole ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                                        Updating...
+                                    </>
+                                ) : (
+                                    'Confirm Update'
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

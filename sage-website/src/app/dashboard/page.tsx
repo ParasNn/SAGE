@@ -64,29 +64,34 @@ export default function DashboardPage() {
                     </button>
                 </header>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-[var(--secondary-color)] rounded-xl p-6 border border-[var(--text2-color)]/20 shadow-lg hover:shadow-xl transition-all duration-300">
-                        <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">Manage Articles</h2>
-                        <p className="text-[var(--text2-color)] mb-6">Create, edit, or delete articles.</p>
+                {/* Content Blocks */}
+                {(() => {
+                    const isManager = user.role?.trim().toLowerCase() === 'admin' || user.role?.trim().toLowerCase() === 'officer';
 
-                        <div className="flex flex-col gap-4">
-                            <Link
-                                href="/upload"
-                                className="w-full text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
-                            >
-                                Upload New Article
-                            </Link>
-                            <Link
-                                href="/my-articles"
-                                className="w-full text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
-                            >
-                                My Articles
-                            </Link>
+                    const ManageArticlesBlock = (
+                        <div className="bg-[var(--secondary-color)] rounded-xl p-6 border border-[var(--text2-color)]/20 shadow-lg hover:shadow-xl transition-all duration-300 w-full">
+                            <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">Articles</h2>
+                            <p className="text-[var(--text2-color)] mb-6">Create, edit, or delete articles.</p>
+
+                            <div className="flex flex-col gap-4">
+                                <Link
+                                    href="/upload"
+                                    className="w-full text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
+                                >
+                                    Upload New Article
+                                </Link>
+                                <Link
+                                    href="/my-articles"
+                                    className="w-full text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
+                                >
+                                    My Articles
+                                </Link>
+                            </div>
                         </div>
-                    </div>
+                    );
 
-                    {(user.role?.trim().toLowerCase() === 'admin' || user.role?.trim().toLowerCase() === 'officer') && (
-                        <div className="bg-[var(--secondary-color)] rounded-xl p-6 border border-[var(--text2-color)]/20 shadow-lg hover:shadow-xl transition-all duration-300">
+                    const ManagementControlsBlock = isManager ? (
+                        <div className="bg-[var(--secondary-color)] rounded-xl p-6 border border-[var(--text2-color)]/20 shadow-lg hover:shadow-xl transition-all duration-300 w-full">
                             <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">Management Controls</h2>
                             <p className="text-[var(--text2-color)] mb-6">Manage users and system settings.</p>
 
@@ -99,39 +104,61 @@ export default function DashboardPage() {
                                 </Link>
                                 {user.role?.trim().toLowerCase() === 'admin' && (
                                     <Link
-                                        href="/invite"
-                                        className="w-full text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
-                                    >
-                                        Invite New User
-                                    </Link>
-                                )}
-                                {user.role?.trim().toLowerCase() === 'admin' && (
-                                    <Link
                                         href="/manage-users"
                                         className="w-full text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
                                     >
                                         Manage Users
                                     </Link>
                                 )}
+                                {user.role?.trim().toLowerCase() === 'admin' && (
+                                    <Link
+                                        href="/invite"
+                                        className="w-full text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
+                                    >
+                                        Invite New User
+                                    </Link>
+                                )}
                             </div>
                         </div>
-                    )}
+                    ) : null;
 
-                    <div className="bg-[var(--secondary-color)] rounded-xl p-6 border border-[var(--text2-color)]/20 shadow-lg hover:shadow-xl transition-all duration-300">
-                        <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">Account Settings</h2>
-                        <p className="text-[var(--text2-color)] mb-6">Manage your profile and security preferences.</p>
+                    const AccountSettingsBlock = (
+                        <div className="bg-[var(--secondary-color)] rounded-xl p-6 border border-[var(--text2-color)]/20 shadow-lg hover:shadow-xl transition-all duration-300 w-full">
+                            <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">Account Settings</h2>
+                            <p className="text-[var(--text2-color)] mb-6">Manage your profile and security preferences.</p>
 
-                        <div className="flex flex-col gap-4">
-                            <Link
-                                href="/manage-account"
-                                className="w-full text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
-                            >
-                                Manage Account
-                            </Link>
+                            <div className="flex flex-col gap-4">
+                                <Link
+                                    href="/manage-account"
+                                    className="w-full text-center px-6 py-3 rounded-lg border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-[var(--background)] transition-colors whitespace-nowrap"
+                                >
+                                    Manage Account
+                                </Link>
+                            </div>
                         </div>
-                    </div>
+                    );
 
-                </div>
+                    if (isManager) {
+                        return (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                                <div className="flex flex-col gap-6 w-full">
+                                    {ManageArticlesBlock}
+                                    {AccountSettingsBlock}
+                                </div>
+                                <div className="flex flex-col gap-6 w-full">
+                                    {ManagementControlsBlock}
+                                </div>
+                            </div>
+                        );
+                    }
+
+                    return (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                            {ManageArticlesBlock}
+                            {AccountSettingsBlock}
+                        </div>
+                    );
+                })()}
             </div>
         </div>
     );
