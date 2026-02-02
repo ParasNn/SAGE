@@ -4,13 +4,14 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { createClient } from '@/utils/supabase/client';
 
 interface UserData {
-    id: number;
-    username: string;
-    email: string;
+    id: string; // Changed to string (uuid)
+    full_name: string;
     role: string;
-    createdAt: string;
+    grad_year: number;
+    created_at: string;
 }
 
 export default function ManageUsersPage() {
@@ -19,6 +20,7 @@ export default function ManageUsersPage() {
     const [users, setUsers] = useState<UserData[]>([]);
     const [loadingUsers, setLoadingUsers] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const supabase = createClient();
 
     useEffect(() => {
         if (!isLoading) {
@@ -39,14 +41,17 @@ export default function ManageUsersPage() {
     const fetchUsers = async () => {
         try {
             setLoadingUsers(true);
-            const response = await fetch('http://localhost:8080/api/auth/users', {
-                credentials: 'include'
-            });
-            if (!response.ok) {
-                throw new Error('Failed to fetch users');
+
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                throw error;
             }
-            const data = await response.json();
-            setUsers(data);
+
+            setUsers(data as UserData[]);
         } catch (err: unknown) {
             console.error(err);
             if (err instanceof Error) {
@@ -59,22 +64,18 @@ export default function ManageUsersPage() {
         }
     };
 
-    const handleRoleChange = async (userId: number, newRole: string) => {
+    const handleRoleChange = async (userId: string, newRole: string) => {
         // Optimistic update
         setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
 
         try {
-            const response = await fetch(`http://localhost:8080/api/auth/users/${userId}/role`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                credentials: "include",
-                body: JSON.stringify({ role: newRole }),
-            });
+            const { error } = await supabase
+                .from('profiles')
+                .update({ role: newRole })
+                .eq('id', userId);
 
-            if (!response.ok) {
-                throw new Error("Failed to update role");
+            if (error) {
+                throw error;
             }
         } catch (error) {
             console.error("Error updating role:", error);
@@ -140,9 +141,9 @@ export default function ManageUsersPage() {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-[var(--secondary-color)] border-b border-[var(--text2-color)]/10 text-[var(--text2-color)] uppercase text-xs tracking-wider">
-                                    <th className="px-6 py-4 font-semibold">Username</th>
-                                    <th className="px-6 py-4 font-semibold">Email</th>
+                                    <th className="px-6 py-4 font-semibold">Full Name</th>
                                     <th className="px-6 py-4 font-semibold">Role</th>
+                                    <th className="px-6 py-4 font-semibold">Grad Year</th>
                                     <th className="px-6 py-4 font-semibold">Created At</th>
                                 </tr>
                             </thead>
@@ -159,22 +160,19 @@ export default function ManageUsersPage() {
                                             <td className="px-6 py-4 font-medium text-[var(--foreground)]">
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-8 h-8 rounded-full bg-[var(--accent-color)]/20 text-[var(--accent-color)] flex items-center justify-center text-xs font-bold">
-                                                        {userData.username.charAt(0).toUpperCase()}
+                                                        {(userData.full_name || '?').charAt(0).toUpperCase()}
                                                     </div>
-                                                    {userData.username}
+                                                    {userData.full_name || 'N/A'}
                                                 </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-[var(--text2-color)]">
-                                                {userData.email}
                                             </td>
                                             <td className="px-6 py-4">
                                                 <select
-                                                    value={userData.role.toLowerCase()}
+                                                    value={userData.role?.toLowerCase() || 'user'}
                                                     onChange={(e) => handleRoleChange(userData.id, e.target.value)}
                                                     className={`text-xs font-medium border rounded-full px-2 py-1 outline-none cursor-pointer appearance-none text-center min-w-[100px]
-                                                                ${userData.role.toLowerCase() === 'admin'
+                                                                ${userData.role?.toLowerCase() === 'admin'
                                                             ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'
-                                                            : userData.role.toLowerCase() === 'officer'
+                                                            : userData.role?.toLowerCase() === 'officer'
                                                                 ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
                                                                 : 'bg-green-500/10 text-green-400 border-green-500/20'
                                                         }`}
@@ -186,7 +184,10 @@ export default function ManageUsersPage() {
                                                 </select>
                                             </td>
                                             <td className="px-6 py-4 text-[var(--text2-color)]">
-                                                {userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'N/A'}
+                                                {userData.grad_year || 'N/A'}
+                                            </td>
+                                            <td className="px-6 py-4 text-[var(--text2-color)]">
+                                                {userData.created_at ? new Date(userData.created_at).toLocaleDateString() : 'N/A'}
                                             </td>
                                         </tr>
                                     ))

@@ -98,50 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 return false;
             }
 
-            // Wait 0.1s
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            // Fetch role and full_name from profiles
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('role, full_name')
-                .eq('id', authUser.id)
-                .single();
-
-            console.log('PROFILE DATA:', profile);
-            console.log('PROFILE ERROR:', error);
-
-            if (error) {
-                console.error('Error fetching profile:', error);
-                // You can return a 4xx here instead of letting it crash
-                throw error;
-            }
-
-            if (profile) {
-                console.log("Fetched role from profiles:", profile.role);
-                console.log("Fetched full_name from profiles:", profile.full_name);
-                const metadataUpdates: { role?: string; name?: string } = {};
-                if (profile.role) metadataUpdates.role = profile.role;
-                if (profile.full_name) metadataUpdates.name = profile.full_name;
-
-                if (Object.keys(metadataUpdates).length > 0) {
-                    // Update JWT metadata
-                    const { data: { user: updatedUser } } = await supabase.auth.updateUser({
-                        data: metadataUpdates
-                    });
-
-                    if (updatedUser) {
-                        const userData: User = {
-                            id: updatedUser.id,
-                            username: updatedUser.user_metadata?.username || updatedUser.email?.split('@')[0] || "User",
-                            email: updatedUser.email || "",
-                            role: updatedUser.user_metadata?.role || "user",
-                            name: updatedUser.user_metadata?.name || ""
-                        };
-                        setUser(userData);
-                    }
-                }
-            }
+            // Trust that Supabase/Triggers handle the role/name in metadata now
 
             isLoginFlow.current = false;
             setIsLoading(false);
