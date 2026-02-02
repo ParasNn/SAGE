@@ -42,8 +42,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     id: sbUser.id,
                     username: sbUser.user_metadata?.username || sbUser.email?.split('@')[0] || "User",
                     email: sbUser.email || "",
-                    role: sbUser.user_metadata?.role || "user",
-                    name: sbUser.user_metadata?.name || ""
+                    role: sbUser.app_metadata?.role || "user",
+                    name: sbUser.app_metadata?.full_name || ""
                 };
                 setUser(initialUser);
             } else {
@@ -58,8 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     id: session.user.id,
                     username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || "User",
                     email: session.user.email || "",
-                    role: session.user.user_metadata?.role || "user",
-                    name: session.user.user_metadata?.name || ""
+                    role: session.user.app_metadata?.role || "user",
+                    name: session.user.app_metadata?.full_name || ""
                 };
                 setUser(userData);
 
