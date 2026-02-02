@@ -25,6 +25,12 @@ export default function ArticlesPage() {
     const [error, setError] = useState<string | null>(null);
     const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // Status Update Confirmation State
+    const [articleToUpdate, setArticleToUpdate] = useState<Article | null>(null);
+    const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+    const [updateDate, setUpdateDate] = useState(false);
     const supabase = createClient();
 
     useEffect(() => {
@@ -87,16 +93,27 @@ export default function ArticlesPage() {
         }
     };
 
-    const handleStatusChange = async (articleId: number, newStatus: string) => {
+    const handleStatusChange = async (articleId: number, newStatus: string, shouldUpdateDate: boolean = false) => {
         try {
+            const now = new Date().toISOString();
+
             // Optimistic update
             setArticles(articles.map(a =>
-                a.id === articleId ? { ...a, status: newStatus } : a
+                a.id === articleId ? {
+                    ...a,
+                    status: newStatus,
+                    publishedDate: shouldUpdateDate ? now : a.publishedDate
+                } : a
             ));
+
+            const updates: any = { status: newStatus };
+            if (shouldUpdateDate) {
+                updates.created_at = now;
+            }
 
             const response = await supabase
                 .from('articles')
-                .update({ status: newStatus })
+                .update(updates)
                 .eq('id', articleId)
                 .select();
 
@@ -154,6 +171,38 @@ export default function ArticlesPage() {
 
     const cancelDelete = () => {
         setArticleToDelete(null);
+    };
+
+    const handleStatusClick = (article: Article, newStatus: string) => {
+        setArticleToUpdate(article);
+        setPendingStatus(newStatus);
+        setUpdateDate(false);
+    };
+
+    const confirmStatusUpdate = async () => {
+        if (!articleToUpdate || !pendingStatus) return;
+
+        setIsUpdatingStatus(true);
+        try {
+            await handleStatusChange(articleToUpdate.id, pendingStatus, updateDate);
+            // Close modal after success
+            setArticleToUpdate(null);
+            setPendingStatus(null);
+            setUpdateDate(false);
+        } catch (error) {
+            console.error('Error confirming status update:', error);
+            setArticleToUpdate(null);
+            setPendingStatus(null);
+            setUpdateDate(false);
+        } finally {
+            setIsUpdatingStatus(false);
+        }
+    };
+
+    const cancelStatusUpdate = () => {
+        setArticleToUpdate(null);
+        setPendingStatus(null);
+        setUpdateDate(false);
     };
 
     if (isLoading) {
@@ -258,7 +307,7 @@ export default function ArticlesPage() {
                                                 <td className="px-6 py-4">
                                                     <select
                                                         value={(article.status || 'draft').toLowerCase()}
-                                                        onChange={(e) => handleStatusChange(article.id, e.target.value)}
+                                                        onChange={(e) => handleStatusClick(article, e.target.value)}
                                                         className={`text-xs font-medium border rounded-full px-2 py-1 outline-none cursor-pointer appearance-none text-center min-w-[100px]
                                                             ${(article.status?.toLowerCase() === 'published' || article.status?.toLowerCase() === 'approved')
                                                                 ? 'bg-green-500/10 text-green-400 border-green-500/20'
@@ -327,6 +376,55 @@ export default function ArticlesPage() {
                                     </>
                                 ) : (
                                     'Delete Article'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Status Change Confirmation Modal */}
+            {articleToUpdate && pendingStatus && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-[var(--secondary-color)] border border-[var(--text2-color)]/20 rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all scale-100">
+                        <h3 className="text-xl font-bold text-[var(--foreground)] mb-2">Update Status?</h3>
+                        <p className="text-[var(--text2-color)] mb-4">
+                            Are you sure you want to change the status of <span className="text-[var(--accent-color)] font-semibold">&quot;{articleToUpdate.title}&quot;</span> to <span className="font-bold underline capitalize">{pendingStatus.replace('_', ' ')}</span>?
+                        </p>
+
+                        <div className="flex items-center gap-2 mb-6 ml-1">
+                            <input
+                                type="checkbox"
+                                id="updateDateCheckbox"
+                                checked={updateDate}
+                                onChange={(e) => setUpdateDate(e.target.checked)}
+                                className="w-4 h-4 rounded border-[var(--text2-color)]/30 text-[var(--accent-color)] focus:ring-[var(--accent-color)]/30 bg-[var(--background)] cursor-pointer"
+                            />
+                            <label htmlFor="updateDateCheckbox" className="text-[var(--foreground)] text-sm cursor-pointer select-none">
+                                Update date to today's date
+                            </label>
+                        </div>
+
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={cancelStatusUpdate}
+                                className="px-4 py-2 rounded-lg border border-[var(--text2-color)]/20 text-[var(--foreground)] hover:bg-[var(--foreground)]/5 transition-colors font-medium"
+                                disabled={isUpdatingStatus}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmStatusUpdate}
+                                className="px-4 py-2 rounded-lg bg-[var(--accent-color)] text-[var(--background)] hover:opacity-90 transition-opacity font-medium flex items-center gap-2"
+                                disabled={isUpdatingStatus}
+                            >
+                                {isUpdatingStatus ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                                        Updating...
+                                    </>
+                                ) : (
+                                    'Confirm Update'
                                 )}
                             </button>
                         </div>
